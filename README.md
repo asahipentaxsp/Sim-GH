@@ -1,2 +1,9 @@
-# Sim-GH
-The html game about greenhouse agronomist. 20 weeks of all cucumber growth. Try to take all harvest.
+# Агроном по защите
+
+Пошаговая браузерная игра про защиту огурца в теплице (16 недель, биологические и химические средства, болезни, вредители, энтомофаги).
+
+Играть: откройте `index.html` в браузере или страницу GitHub Pages этого репозитория.
+
+## Разработка
+- `src/` — исходники, `build.js` — сборка в один HTML (`dist/`), `tests/` — тесты (`node --test tests/*.test.js`)
+- `docs/` — спецификация, план, заметки по балансу

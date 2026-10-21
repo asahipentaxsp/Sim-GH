@@ -1,0 +1,2126 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Агроном по защите</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Пошаговая игра: защита огурца на светокультуре биопрепаратами АгроБиоТехнологии и энтомофагами.">
+<style>
+/* Раскладка: вертикальный смартфон. Одна колонка ≤560px: шапка недели → погода → изометрическое поле (главный элемент)
+   → вкладки инструментов → журнал; главная кнопка в нижней панели под большим пальцем.
+   Одна тёмная тема: ночная теплица под ДНаТ, антрацитовый каркас (RAL 7016), зелень листа. */
+:root {
+  color-scheme: dark;
+  --bg: #121517; --panel: #1B2023; --panel-2: #232A2E; --panel-3: #2B3338; --line: #333C42;
+  --ink: #E9EDE7; --muted: #98A39D; --accent: #F2A33A; --accent-ink: #1C1305; --accent-soft: rgba(242,163,58,.14);
+  --leafc: #8CC46A; --good: #8CC46A; --warn: #F2B347; --bad: #FF7B66;
+  --anthracite: #383E42; --anthracite-hi: #4A5157; --anthracite-lo: #262B2E;
+  --sky: #0F1214; --hps: #FFB046;
+  --slab-top: #2A3033; --slab-left: #1D2224; --slab-right: #171B1D; --rail: #8E979B; --glow: rgba(255,176,70,.10);
+  --glass: rgba(150,185,200,.07); --glass-edge: rgba(150,185,200,.18);
+  --mat: #E6DCC6; --gutter: #3D4448; --gutter-end: #2F3538; --drip: #2B2B2B; --mat-prot: #66D1B8;
+  --tile: rgba(255,255,255,.0); --tile-sel: rgba(242,163,58,.28); --tile-target: rgba(140,196,106,.10);
+  --stem: #5E8A35; --wire: #6C757A; --twine: rgba(220,215,200,.35);
+  --leaf-top: #8CC46A; --leaf-under: #4C7A30; --leaf-sick-top: #E0B04A; --leaf-sick-under: #A87B28; --leaf-dead-top: #8A6136; --leaf-dead-under: #5E3F22;
+  --fruit: #3E7A2C; --fruit-hl: rgba(255,255,255,.35);
+  --sym-powdery: #F4F1E6; --sym-downy: #F3D447; --sym-botrytis: #A8ABA6; --sym-ascochyta: #2A1A10;
+  --sym-bacterial: rgba(70,52,18,.85); --sym-root: #4A2F1A; --sym-crazy: #F0DCAA;
+  --pest-whitefly: #FFFFFF; --pest-thrips: #F0E2C4; --pest-mite: #FF5E4D; --pest-psychoda: #CFC6B8;
+  --enemy: #66D1B8; --trap-yellow: #F7DA2C; --trap-blue: #6EA2FF; --prot: #66D1B8;
+  --lamp: #4A5157; --bulb: #FFC56B;
+  --f-display: "Roboto Condensed", "Arial Narrow", "Helvetica Neue", system-ui, sans-serif;
+  --f-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body { background: var(--bg); color: var(--ink); }
+body { margin: 0; font: 15px/1.45 var(--f-body); -webkit-tap-highlight-color: transparent; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+.app { max-width: 560px; margin: 0 auto; padding-left: max(14px, env(safe-area-inset-left, 0px)); padding-right: max(14px, env(safe-area-inset-right, 0px)); padding-block: 6px 120px; display: flex; flex-direction: column; gap: 10px; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.label { font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+
+/* шапка */
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px; padding-block: 8px; }
+.title { display: flex; flex-direction: column; min-width: 0; }
+.title .label { color: var(--accent); }
+.title b { font-family: var(--f-display); font-size: 24px; line-height: 1.05; font-weight: 700; white-space: nowrap; }
+.title b span { color: var(--muted); font-weight: 600; font-size: 16px; }
+.res { display: flex; gap: 6px; }
+.pill { display: flex; flex-direction: column; align-items: flex-end; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 4px 9px; min-width: 64px; }
+.pill b { font-family: var(--f-display); font-size: 18px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.pill small { color: var(--muted); font-size: 11px; }
+.pill.low { border-color: var(--bad); } .pill.low b { color: var(--bad); }
+.icon-btn { min-height: 44px; min-width: 44px; border: 1px solid var(--line); background: var(--panel); border-radius: 10px; font-weight: 700; font-size: 17px; }
+
+/* погода */
+.weather { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 13px; }
+.chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); }
+.chip.risk { border-color: var(--warn); color: var(--warn); font-weight: 600; }
+.chip.fixed { text-decoration: line-through; color: var(--muted); }
+.forecast { color: var(--muted); width: 100%; }
+
+/* поле */
+.board { position: relative; background: var(--sky); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0,0,0,.3); }
+.board-scroll { overflow: hidden; }
+.board.zoom .board-scroll { overflow: auto; -webkit-overflow-scrolling: touch; max-height: 70vh; overscroll-behavior: contain; }
+.board.zoom .field { width: 160%; max-width: none; }
+.board-tools { position: absolute; top: 8px; right: 8px; display: flex; gap: 6px; z-index: 2; }
+.board-tools button { min-height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line); background: rgba(27,32,35,.88); font-weight: 600; font-size: 13px; }
+.board-tools button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.field { display: block; width: 100%; height: auto; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+.field .sky { fill: var(--sky); }
+.field .slab-top { fill: var(--slab-top); } .field .slab-left { fill: var(--slab-left); } .field .slab-right { fill: var(--slab-right); }
+.field .rail { stroke: var(--rail); stroke-width: 1.3; opacity: .55; }
+.field .glow { fill: var(--glow); }
+.field .glass { fill: var(--glass); stroke: var(--glass-edge); stroke-width: .6; }
+.field .post { stroke: var(--anthracite-hi); stroke-width: 3.2; }
+.field .mullion { stroke: var(--anthracite); stroke-width: 1.4; }
+.field .beam { stroke: var(--anthracite-hi); stroke-width: 3.4; }
+.field .sill { stroke: var(--anthracite); stroke-width: 2; }
+.field .truss { stroke: var(--anthracite); stroke-width: 1.6; opacity: .8; }
+.field .post-box { fill: var(--anthracite); stroke: var(--anthracite-hi); stroke-width: .8; }
+.field .row-num { fill: var(--muted); font: 700 12px var(--f-display); }
+.field .tile { fill: var(--tile); }
+.field .sel-ring { fill: rgba(242,163,58,.12); stroke: var(--accent); stroke-width: 2; }
+.field .is-target .tile { fill: var(--tile-target); }
+.field .is-selected .tile { fill: var(--tile-sel); stroke: var(--accent); stroke-width: 1.4; }
+.field .leg { stroke: var(--anthracite-hi); stroke-width: 1.2; }
+.field .gutter-side { fill: var(--gutter); } .field .gutter-end { fill: var(--gutter-end); }
+.field .mat { fill: var(--mat); }
+.field .mat-prot { fill: var(--mat); stroke: var(--mat-prot); stroke-width: 1.4; }
+.field .mat-prot-fading { stroke-dasharray: 3 2.5; }
+.field .drip { stroke: var(--drip); stroke-width: .9; }
+.field .wire { stroke: var(--wire); stroke-width: .8; }
+.field .twine { stroke: var(--twine); stroke-width: .6; }
+.field .stem { fill: none; stroke: var(--stem); stroke-width: 2.2; stroke-linecap: round; }
+.field .leaf-under { fill: var(--leaf-under); } .field .leaf-top { fill: var(--leaf-top); }
+.field .leaf-under.sick { fill: var(--leaf-sick-under); } .field .leaf-top.sick { fill: var(--leaf-sick-top); }
+.field .leaf-under.dead { fill: var(--leaf-dead-under); } .field .leaf-top.dead { fill: var(--leaf-dead-top); }
+.field .fruit { fill: var(--fruit); } .field .fruit-hl { fill: var(--fruit-hl); }
+.field .sym-powdery { fill: var(--sym-powdery); }
+.field .sym-downy { fill: var(--sym-downy); }
+.field .sym-bacterial { fill: var(--sym-bacterial); }
+.field .sym-botrytis circle { fill: var(--sym-botrytis); } .field .sym-botrytis .fuzz { fill: none; stroke: var(--sym-botrytis); stroke-width: 1.2; stroke-dasharray: 1 1.6; }
+.field .sym-ascochyta { fill: var(--sym-ascochyta); }
+.field .sym-rootRot { fill: var(--sym-root); }
+.field .sym-crazyRoot { fill: none; stroke: var(--sym-crazy); stroke-width: 1.5; stroke-linecap: round; }
+.field .pest-whitefly { fill: var(--pest-whitefly); }
+.field .pest-thrips { fill: var(--pest-thrips); }
+.field .pest-mite { fill: var(--pest-mite); } .field .pest-mite .web { fill: none; stroke: var(--pest-mite); stroke-width: .45; opacity: .7; }
+.field .pest-psychoda { fill: var(--pest-psychoda); }
+.field .enemy { fill: var(--enemy); stroke: var(--enemy); stroke-width: .6; }
+.field .enemy rect { fill: #F2EEE2; }
+.field .trap line { stroke: var(--muted); stroke-width: 1; }
+.field .trap-yellow rect { fill: var(--trap-yellow); } .field .trap-blue rect { fill: var(--trap-blue); }
+.field .prot-leaf { fill: none; stroke: var(--prot); stroke-width: 1; stroke-dasharray: 2 2.5; opacity: .85; }
+.field .pin circle { stroke: rgba(0,0,0,.35); stroke-width: .8; }
+.field .pin-warn circle { fill: var(--warn); } .field .pin-bad circle { fill: var(--bad); }
+.field .pin .pin-halo { opacity: .28; stroke: none; }
+.field .lamp-body { fill: var(--lamp); } .field .lamp-bulb { fill: var(--bulb); } .field .hanger { stroke: var(--anthracite-hi); stroke-width: .8; }
+@keyframes halo { 0%, 100% { opacity: .18; } 50% { opacity: .45; } }
+.field .pin-bad .pin-halo { animation: halo 2.4s ease-in-out infinite; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); padding: 0 2px; }
+.legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 4px; vertical-align: -1px; }
+
+.hint { background: var(--accent-soft); border: 1px solid rgba(242,163,58,.3); border-radius: 12px; padding: 8px 12px; font-size: 13.5px; display: flex; gap: 8px; align-items: start; justify-content: space-between; }
+.hint button { border: 0; background: none; color: var(--muted); min-height: 32px; text-decoration: underline; flex: none; }
+
+/* вкладки и инструменты */
+.tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.tab { min-height: 44px; padding: 0 4px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); font-weight: 600; font-size: 13.5px; }
+.tab[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.panel p { margin: 0; }
+.tools { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tool { text-align: left; min-height: 60px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel-2); padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; }
+.tool b { font-size: 14px; line-height: 1.2; }
+.tool small { color: var(--muted); font-size: 12px; line-height: 1.3; }
+.tool[aria-pressed="true"] { border: 2px solid var(--accent); padding: 7px 9px; background: var(--accent-soft); }
+.tool.chem b::after { content: " · химия"; color: var(--bad); font-weight: 600; font-size: 12px; }
+.stock-tag { font-variant-numeric: tabular-nums; }
+.stock-tag.zero { color: var(--bad); }
+.seg { display: flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.seg button { flex: 1; min-height: 44px; border: 0; background: var(--panel-2); border-right: 1px solid var(--line); font-size: 14px; }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); font-weight: 700; }
+.switch { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 52px; border: 1px solid var(--line); border-radius: 12px; padding: 6px 12px; background: var(--panel-2); width: 100%; text-align: left; }
+.switch[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.switch .knob { flex: none; width: 42px; height: 26px; border-radius: 13px; background: var(--panel-3); position: relative; border: 1px solid var(--line); }
+.switch .knob::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--muted); transition: left .15s; }
+.switch[aria-pressed="true"] .knob { background: var(--accent); border-color: var(--accent); }
+.switch[aria-pressed="true"] .knob::after { left: 19px; background: var(--accent-ink); }
+.switch span { display: flex; flex-direction: column; }
+.switch small { color: var(--muted); }
+.warnline { color: var(--warn); font-size: 13px; }
+
+.list { display: flex; flex-direction: column; gap: 6px; }
+.row-item { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.row-item:last-child { border-bottom: 0; }
+.row-item .meta { font-size: 12.5px; color: var(--muted); grid-column: 1 / -1; }
+.stepper { display: flex; align-items: center; gap: 4px; }
+.stepper button { min-width: 44px; min-height: 44px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel-2); font-weight: 700; }
+.stepper output { min-width: 34px; text-align: center; font-variant-numeric: tabular-nums; }
+.btn { min-height: 46px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel-2); padding: 0 14px; font-weight: 600; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn:disabled { opacity: .45; }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn-row .btn { flex: 1 1 auto; }
+
+/* журнал */
+.journal { font-size: 13px; display: flex; flex-direction: column; gap: 6px; }
+.journal p { margin: 0; display: grid; grid-template-columns: 44px 1fr; gap: 8px; }
+.journal p span:first-child { color: var(--muted); font-variant-numeric: tabular-nums; }
+.journal .disease span:last-child { color: var(--warn); } .journal .pest span:last-child, .journal .chem span:last-child { color: var(--bad); }
+
+/* нижняя панель */
+.dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: rgba(18,21,23,.96); border-top: 1px solid var(--line); padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)); padding-top: 10px; backdrop-filter: blur(6px); }
+.dock-in { max-width: 560px; margin: 0 auto; padding-left: max(14px, env(safe-area-inset-left, 0px)); padding-right: max(14px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 8px; }
+.dock .summary { font-size: 13.5px; }
+.dock .btn { width: 100%; min-height: 54px; font-size: 16.5px; }
+.dock .btn-row .btn { width: auto; }
+.toast { font-size: 13.5px; color: var(--bad); }
+.toast.ok { color: var(--good); }
+
+/* листы поверх */
+.sheet-back { position: fixed; inset: 0; z-index: 20; background: rgba(5,7,8,.6); display: flex; align-items: flex-end; justify-content: center; }
+.sheet { width: 100%; max-width: 560px; max-height: 86%; overflow-y: auto; background: var(--panel); border: 1px solid var(--line); border-bottom: 0; border-radius: 20px 20px 0 0; padding-top: 14px; padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px)); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 12px; }
+.sheet::before { content: ""; width: 40px; height: 4px; border-radius: 2px; background: var(--line); align-self: center; margin-top: -4px; }
+.sheet-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.sheet-head h2 { font-size: 22px; }
+.close { min-width: 44px; min-height: 44px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel-2); font-size: 18px; }
+.event { border-left: 3px solid var(--line); padding: 2px 0 2px 10px; margin: 0; }
+.event.disease { border-color: var(--warn); } .event.pest, .event.chem { border-color: var(--bad); }
+.event.cond, .event.flood, .event.hotmat { border-color: var(--warn); }
+.kv { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; font-variant-numeric: tabular-nums; margin: 0; }
+.kv dt { color: var(--muted); } .kv dd { margin: 0; text-align: right; font-weight: 600; }
+.link { background: none; border: 0; padding: 0; color: var(--accent); text-decoration: underline; min-height: 32px; text-align: left; }
+.stage-2 { color: var(--warn); } .stage-3, .stage-4 { color: var(--bad); font-weight: 600; }
+.card { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; background: var(--panel-2); }
+.card h3 { font-size: 17px; }
+.card .lat { font-style: italic; color: var(--muted); font-size: 13px; }
+.card p { margin: 0; font-size: 14px; }
+.card p b { font-weight: 600; }
+
+/* старт и финал */
+.hero { display: flex; flex-direction: column; gap: 8px; padding-block: 14px 4px; }
+.hero h1 { font-size: 46px; line-height: .95; font-weight: 700; }
+.hero p { margin: 0; color: var(--muted); max-width: 40ch; }
+.hero .board { margin-top: 6px; }
+.prep { display: flex; flex-direction: column; gap: 8px; }
+.field-input { display: flex; flex-direction: column; gap: 4px; }
+.field-input input { min-height: 46px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel-2); color: var(--ink); padding: 0 12px; font: inherit; font-variant-numeric: tabular-nums; }
+.big { font-family: var(--f-display); font-size: 60px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; color: var(--accent); }
+.rank { font-family: var(--f-display); font-size: 24px; }
+.bar { height: 10px; border-radius: 5px; background: var(--panel-3); overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--accent); }
+.mistake { display: flex; flex-direction: column; gap: 2px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.mistake:last-child { border-bottom: 0; }
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ---- core.js ----
+// Общее пространство имён, генератор случайности, утилиты.
+(function (g) {
+  const AG = g.AG || (g.AG = {});
+  AG.sim = AG.sim || {};
+
+  // mulberry32: состояние — одно 32-битное число, удобно хранить в state.
+  AG.rngNext = function (s) {
+    s = (s + 0x6D2B79F5) >>> 0;
+    let t = s;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return { s, x: ((t ^ (t >>> 14)) >>> 0) / 4294967296 };
+  };
+  AG.makeRng = function (seed) {
+    let s = seed >>> 0;
+    const r = () => { const o = AG.rngNext(s); s = o.s; return o.x; };
+    r.state = () => s;
+    return r;
+  };
+  // RNG, привязанный к state.rngState: каждое число продвигает состояние сезона.
+  AG.stateRng = function (state) {
+    return () => { const o = AG.rngNext(state.rngState); state.rngState = o.s; return o.x; };
+  };
+  AG.hashSeed = function (str) {
+    let h = 0x811c9dc5;
+    for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+    return h >>> 0;
+  };
+  AG.clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+  // Выбор индекса по массиву вероятностей.
+  AG.pick = function (rng, probs) {
+    let x = rng(), acc = 0;
+    for (let i = 0; i < probs.length; i++) { acc += probs[i]; if (x < acc) return i; }
+    return probs.length - 1;
+  };
+  AG.clone = o => JSON.parse(JSON.stringify(o));
+  AG.round = (x, d = 1) => Math.round(x * 10 ** d) / 10 ** d;
+})(typeof globalThis !== 'undefined' ? globalThis : window);
+
+// ---- data.js ----
+// Все таблицы игры. Только данные, без логики.
+// Деньги — тыс. ₽. Вероятности — за неделю. Источник чисел — спецификация v1.
+(function (g) {
+  const AG = g.AG;
+
+  // Условия климата для таблиц болезней (вычисляются в climate.js → flags()).
+  // dry: влажность 0; humHigh: 2; humVHigh: 3; humGE2: ≥2; cold; hot; cond; matHot; matFlood.
+
+  const diseases = {
+    rootRot: {
+      kind: 'root', latency: 2, maxStage: 4,
+      base: { max: [['matHot', 0.08], ['matFlood', 0.06], ['cold', 0.02]], else: 0 },
+      spread: { mode: 'rowAdj', p: 0.25 },
+    },
+    crazyRoot: {
+      kind: 'root', latency: 2, maxStage: 3, fixedLoss: 0.25,
+      base: { max: [['matFlood', 0.03]], else: 0 },
+      spread: { mode: 'rowAny', p: 0.15 },
+    },
+    powdery: {
+      kind: 'leaf', latency: 1, maxStage: 4,
+      base: { max: [['dry', 0.06], ['hot', 0.04], ['cold', 0.04]], else: 0.01 },
+      spread: { mode: 'n8', p: 0.2, jump: 0.1 },
+    },
+    downy: {
+      kind: 'leaf', latency: 1, maxStage: 4, condBoost: 2,
+      base: { max: [['cond', 0.10], ['humVHigh', 0.05]], else: 0 },
+      spread: { mode: 'n4', p: 0.1, pHum: 0.35 },
+    },
+    botrytis: {
+      kind: 'leaf', latency: 1, maxStage: 4, formation: 2,
+      base: { max: [['humHigh', 0.03], ['humVHigh', 0.07]], add: [['cold', 0.02]], else: 0 },
+      spread: { mode: 'n4', p: 0.15 },
+    },
+    ascochyta: {
+      kind: 'leaf', latency: 1, maxStage: 4, formation: 2,
+      base: { max: [['humHigh', 0.02], ['humVHigh', 0.05]], else: 0 },
+      spread: { mode: 'n8', p: 0.1 },
+    },
+    bacterial: {
+      kind: 'leaf', latency: 1, maxStage: 4, wetWork: 0.3,
+      base: { max: [['cond', 0.05]], else: 0 },
+      spread: { mode: 'n4', p: 0.15 },
+    },
+  };
+
+  const stageLoss = [0, 0, 0.05, 0.25, 0.6];
+
+  const pests = {
+    whitefly: { appear: 0.008, rate: { hot: 1, else: 0.5 }, spread: 0.2, sooty: 0.1, trap: 'yellow' },
+    thrips: { appear: 0.008, rate: { hotOrDry: 1, else: 0.5 }, spread: 0.25, trap: 'blue' },
+    mite: { appear: 0.006, rate: { both: 2, hotOrDry: 1, else: 0.5 }, spread: 0.3 },
+    psychoda: { appear: 0.2, onlyFlood: true, rate: { flood: 1, else: 0 }, spread: 0.2, lossPerLvl: 0.03, rootRotAdd: 0.03, trap: 'yellow' },
+  };
+  const pestLoss = [0, 0, 0.03, 0.12, 0.3];
+
+  const enemies = {
+    encarsia: { targets: ['whitefly'], price: 1.0, blockedBy: 'cold' },
+    swirskii: { targets: ['thrips', 'whitefly'], price: 2.0, sachet: 4 },
+    cucumeris: { targets: ['thrips'], price: 1.5, sachet: 4 },
+    phytoseiulus: { targets: ['mite'], price: 2.0, blockedBy: 'dryHot' },
+    californicus: { targets: ['mite'], price: 2.0 },
+  };
+
+  // modes: где применяется. leaf/mat — эффективность профилактики по болезням.
+  // pests — разовое снижение плотности {d, p}. cure — лечение химией.
+  const products = {
+    gliokladin: { name: 'Глиокладин, СП', abt: true, price: 0.4, modes: ['mat', 'leaf'],
+      mat: { rootRot: 0.7, crazyRoot: 0.5 }, leaf: { botrytis: 0.6, ascochyta: 0.6 } },
+    trichocin: { name: 'Трихоцин, СП', abt: true, price: 0.4, modes: ['mat'], matOnlyWeek0: true,
+      mat: { rootRot: 0.7 } },
+    alirinGamair: { name: 'Алирин-Б + Гамаир, СП', abt: true, price: 0.8, modes: ['mat', 'leaf'],
+      mat: { rootRot: 0.75, crazyRoot: 0.5 }, leaf: { powdery: 0.6, bacterial: 0.6 } },
+    mikozar: { name: 'Микозар, СП', abt: true, price: 1.0, modes: ['mat', 'leaf'],
+      mat: { rootRot: 0.8, crazyRoot: 0.5 }, leaf: { downy: 0.6, ascochyta: 0.6, bacterial: 0.5 } },
+    vlip: { name: 'Влип', abt: true, price: 0.2, modes: ['additive'] },
+    endobacterin: { name: 'Эндобактерин, Ж', abt: true, price: 0.8, modes: ['leaf'],
+      pests: { mite: { d: 1, p: 0.7 }, thrips: { d: 1, p: 0.7 } } },
+    lovchiy: { name: 'Ловчий, СП', abt: true, price: 1.2, modes: ['leaf'],
+      pests: { thrips: { d: 1, p: 0.7 }, whitefly: { d: 1, p: 0.7 } } },
+    boverin: { name: 'Боверин', abt: true, price: 0.6, modes: ['mat'],
+      pests: { psychoda: { d: 2, p: 1 } } },
+    chemFungLeaf: { name: 'Химический фунгицид (по листу)', chem: true, price: 0.6, modes: ['leaf'],
+      cure: { kind: 'leaf', p: 0.9, d: 2 }, leaf: { powdery: 0.8, downy: 0.8, botrytis: 0.8, ascochyta: 0.8, bacterial: 0.5 }, harvestLoss: 0.4, enemyHit: 1 },
+    chemFungMat: { name: 'Химический фунгицид (в мат)', chem: true, price: 0.6, modes: ['mat'],
+      cure: { kind: 'root', only: ['rootRot'], p: 0.9, d: 2 }, stripsMat: true },
+    chemInsect: { name: 'Химический инсектоакарицид', chem: true, price: 0.8, modes: ['leaf'],
+      pests: { whitefly: { d: 2, p: 0.9 }, thrips: { d: 2, p: 0.9 }, mite: { d: 2, p: 0.9 }, psychoda: { d: 2, p: 0.9 } },
+      harvestLoss: 0.7, killsEnemies: true },
+    trapYellow: { name: 'Жёлтая клеевая ловушка', price: 0.1, modes: ['trap'], color: 'yellow' },
+    trapBlue: { name: 'Синяя клеевая ловушка', price: 0.1, modes: ['trap'], color: 'blue' },
+  };
+
+  const climatePhases = [
+    { weeks: [1, 3], name: 'Тёплый старт', hum: [0.20, 0.50, 0.25, 0.05], temp: [0.50, 0.05, 0.45], mat: [0.55, 0.35, 0.10] },
+    { weeks: [4, 9], name: 'Осень', hum: [0.05, 0.35, 0.40, 0.20], temp: [0.45, 0.50, 0.05], mat: [0.83, 0.02, 0.15] },
+    { weeks: [10, 16], name: 'Отопление под лампами', hum: [0.45, 0.40, 0.12, 0.03], temp: [0.55, 0.10, 0.35], mat: [0.85, 0.05, 0.10] },
+  ];
+  const tempValues = ['norm', 'cold', 'hot'];
+  const matValues = ['norm', 'hot', 'flood'];
+
+  const levers = {
+    vent: { name: 'Проветривание', price: 8, hours: 0, hint: 'Влажность на ступень ниже' },
+    heat: { name: 'Подогрев труб', price: 12, hours: 0, hint: 'Убирает холодную ночь и конденсат' },
+    coolMat: { name: 'Охлаждение раствора', price: 6, hours: 0, hint: 'Убирает перегрев матов' },
+    humidify: { name: 'Увлажнение', price: 5, hours: 0, hint: 'Влажность на ступень выше' },
+    irrigFix: { name: 'Коррекция полива', price: 0, hours: 1, hint: 'Убирает перелив матов' },
+  };
+
+  const labor = {
+    inspect: 0.5,
+    leaf: { cell: 0.25, row: 1.5, all: 8 },
+    mat: { row: 0.5, all: 1 },
+    release: 0.25,
+    trap: 0.1,
+    sanitize: 1,
+    trayHygiene: 1,
+    disinfectSolution: 0,
+  };
+
+  const prep = {
+    disinfectGreenhouse: { name: 'Дезинфекция теплицы', price: 60, hint: 'Риск листовых болезней ×0,5 в первые 4 недели' },
+    disinfectDrip: { name: 'Дезинфекция капельной системы и ёмкостей', price: 40, hint: 'Нет стартового очага бешеного корня' },
+    gliokladinStructures: { name: 'Глиокладин на стёкла и конструкции', price: 15, hint: 'Риск серой гнили и аскохитоза ×0,5 в первые 4 недели' },
+    seedlings: { name: 'Защита рассады (Глиокладин + Алирин-Б)', price: 10, hint: 'Корневые гнили в недели 1–2 ×0,3' },
+  };
+
+  const yieldCurve = [0, 0, 0, 0, 1.0, 2.0, 2.8, 2.8, 2.8, 2.8, 2.8, 2.8, 2.8, 2.8, 2.8, 2.0, 1.5];
+
+  AG.DATA = {
+    rows: 6, cols: 6, weeks: 16,
+    cellArea: 10000 / 36, pricePerKg: 0.14,
+    diseases, stageLoss, pests, pestLoss, enemies, products,
+    climatePhases, tempValues, matValues, levers, labor, prep, yieldCurve,
+    formationWeeks: [3, 6, 9, 12],
+    matDecay: [1, 1, 0.75, 0.5],
+    vlipBonus: 0.1, leafWeeks: 1, leafWeeksVlip: 2,
+    urgentMult: 1.5, solutionDisinfectPrice: 5,
+    sanitizeLoss: 0.3, sanitizeWeeks: 2,
+    start: { budget: 600, hours: 20, stock: { gliokladin: 12, alirinGamair: 12 } },
+    ranks: [[85, 'Главный агроном'], [70, 'Агроном'], [0, 'Агроном-стажёр']],
+    text: null, // заполняет text.js-раздел ниже
+  };
+
+  // ---------- Тексты ----------
+  const humNames = ['сухо', 'норма', 'влажно', 'очень влажно'];
+  const tempNames = { norm: 'температура в норме', cold: 'холодная ночь', hot: 'жара' };
+  const matNames = { norm: 'маты в норме', hot: 'перегрев матов >30°', flood: 'перелив матов' };
+
+  const ref = {
+    rootRot: { name: 'Корневые гнили', short: 'корневая гниль',
+      agent: 'Pythium spp., Fusarium oxysporum и др.',
+      symptoms: 'Дневное увядание верхушки, побурение корней и шейки, растение отстаёт и гибнет.',
+      conditions: 'Перегрев раствора и матов выше 30° (летняя посадка — питиоз), перелив, холодный субстрат.',
+      spread: 'Медленно, но по всему ряду — через мат и раствор капельного полива.',
+      control: 'Профилактика в маты: Глиокладин или Микозар после высадки, через 2–3 дня Алирин-Б + Гамаир, дальше ежемесячно. Климат: не перегревать и не переливать маты. Химия в мат — только при сильном поражении и с обязательным биопрепаратом после.' },
+    crazyRoot: { name: 'Бешеный корень (crazy root)', short: 'бешеный корень',
+      agent: 'Agrobacterium (Rhizobium) rhizogenes, носители Ri-плазмиды',
+      symptoms: 'Корни массово разрастаются и вылезают из мата, растение «жирует» в вегетацию, урожай падает до 25–30%.',
+      conditions: 'Заносится с поливной водой и биоплёнкой капельной системы, контактно при нарушении карантина.',
+      spread: 'По раствору — на любые растения ряда.',
+      control: 'Дезинфекция теплицы, лотков, капельной системы и ёмкостей до посадки. Биопрепараты в маты по схеме корневых гнилей. Обеззараживание раствора.' },
+    powdery: { name: 'Мучнистая роса', short: 'мучнистая роса',
+      agent: 'Erysiphe cichoracearum, Podosphaera xanthii',
+      symptoms: 'Белый мучнистый налёт сверху листа, лист желтеет и засыхает.',
+      conditions: 'Капельная влага не нужна. Сухой воздух днём, перепады температуры. Чаще на неустойчивых гибридах и в осеннем обороте.',
+      spread: 'По воздуху на соседние растения и «прыжками» через теплицу.',
+      control: 'Алирин-Б модиф. или Алирин-Б + Гамаир по листу с Влипом на опережение. Химия — при сильном поражении, затем биопрепараты.' },
+    downy: { name: 'Пероноспороз (ложная мучнистая роса)', short: 'пероноспороз',
+      agent: 'Pseudoperonospora cubensis',
+      symptoms: 'Жёлтые угловатые пятна между жилками сверху, серо-фиолетовый налёт снизу.',
+      conditions: 'Капельная влага на листе: конденсат после холодной ночи, очень высокая влажность.',
+      spread: 'Очень быстро на соседей при высокой влажности.',
+      control: 'Не допускать конденсата: подогрев труб, проветривание. Микозар по листу с Влипом на опережение.' },
+    botrytis: { name: 'Серая гниль', short: 'серая гниль',
+      agent: 'Botrytis cinerea',
+      symptoms: 'Мокнущие пятна с серым пушистым налётом на стебле, в местах обрезки, на завязи.',
+      conditions: 'Высокая влажность, холод, плохое проветривание. Вход через раны — риск растёт после формирования растений.',
+      spread: 'На соседние растения.',
+      control: 'Климат + Глиокладин по стеблям и листьям, особенно сразу после пасынкования и обрезки.' },
+    ascochyta: { name: 'Аскохитоз', short: 'аскохитоз',
+      agent: 'Ascochyta cucumis (Didymella bryoniae)',
+      symptoms: 'Светлые, затем тёмные пятна с пикнидами на стебле у узлов и у основания, загнивание кончиков плодов.',
+      conditions: 'Высокая влажность, раны после формирования.',
+      spread: 'На соседей, в том числе через ряд.',
+      control: 'Глиокладин или Микозар опрыскиванием по стеблям и листьям после формирования.' },
+    bacterial: { name: 'Бактериоз (угловатая пятнистость)', short: 'бактериоз',
+      agent: 'Pseudomonas syringae pv. lachrymans',
+      symptoms: 'Маслянистые угловатые пятна, позже выпадают — лист «дырявый». Капли экссудата.',
+      conditions: 'Капельная влага на листе.',
+      spread: 'На соседей. Рабочие разносят его руками по мокрому листу — не работайте в ряду с бактериозом при конденсате без подогрева.',
+      control: 'Гамаир (Алирин-Б + Гамаир) или Микозар по листу с Влипом, сухой лист.' },
+    whitefly: { name: 'Тепличная белокрылка', short: 'белокрылка',
+      agent: 'Trialeurodes vaporariorum',
+      symptoms: 'Белые мошки на верхних листьях, личинки снизу листа. Медвяная роса и сажистый гриб.',
+      conditions: 'Тепло ускоряет развитие.',
+      spread: 'Перелетает на соседние растения.',
+      control: 'Жёлтые ловушки для мониторинга. Энкарзия и свирский профилактически. Ловчий — совместим с энтомофагами.' },
+    thrips: { name: 'Трипсы', short: 'трипсы',
+      agent: 'Frankliniella occidentalis, Thrips tabaci',
+      symptoms: 'Серебристые пятна на листьях, деформация и рубцы на плодах.',
+      conditions: 'Жара и сухой воздух.',
+      spread: 'Быстро на соседние растения.',
+      control: 'Синие ловушки. Свирский или кукумерис пакетиками профилактически. Ловчий, Эндобактерин.' },
+    mite: { name: 'Паутинный клещ', short: 'паутинный клещ',
+      agent: 'Tetranychus urticae',
+      symptoms: 'Мелкая светлая пятнистость, паутина, лист «мраморный» и засыхает.',
+      conditions: 'Сухо и жарко — взрывной рост очагами. Увлажнение тормозит.',
+      spread: 'Очагами на соседей.',
+      control: 'Фитосейулюс в очаги (нужна влажность), калифорникус при жаре. Эндобактерин.' },
+    psychoda: { name: 'Мухи-психоды (бабочницы)', short: 'психоды',
+      agent: 'семейство Psychodidae',
+      symptoms: 'Мелкие мохнатые мушки на матах и лотках, личинки в мокром субстрате и водорослях.',
+      conditions: 'Перелив, застой воды и водоросли в лотках.',
+      spread: 'Вдоль ряда.',
+      control: 'Гигиена лотков, коррекция полива. Боверин (Beauveria bassiana) с поливом. Психоды — индикатор проблем с поливом и усиливают корневые гнили.' },
+    encarsia: { name: 'Энкарзия', short: 'энкарзия', agent: 'Encarsia formosa',
+      symptoms: 'Паразит личинок белокрылки: заражённые личинки чернеют.',
+      conditions: 'Нужна тёплая погода: в холодную ночь не работает.', spread: '', control: 'Против белокрылки.' },
+    swirskii: { name: 'Амблисейус свирский', short: 'свирский', agent: 'Amblyseius swirskii',
+      symptoms: 'Хищный клещ: ест личинок трипса и яйца с личинками белокрылки.',
+      conditions: 'Пакетики работают 4 недели даже без добычи.', spread: '', control: 'Против трипсов и белокрылки. Основной хищник на огурце.' },
+    cucumeris: { name: 'Амблисейус кукумерис', short: 'кукумерис', agent: 'Neoseiulus cucumeris',
+      symptoms: 'Хищный клещ: ест личинок трипса.',
+      conditions: 'Пакетики работают 4 недели.', spread: '', control: 'Против трипсов.' },
+    phytoseiulus: { name: 'Фитосейулюс', short: 'фитосейулюс', agent: 'Phytoseiulus persimilis',
+      symptoms: 'Хищный клещ, специалист по паутинному клещу.',
+      conditions: 'В сухую жару не работает — нужна влажность.', spread: '', control: 'Выпуск в очаги клеща.' },
+    californicus: { name: 'Амблисейус калифорникус', short: 'калифорникус', agent: 'Neoseiulus californicus',
+      symptoms: 'Хищный клещ против паутинного клеща.',
+      conditions: 'Переносит жару и сухость лучше фитосейулюса.', spread: '', control: 'Против паутинного клеща.' },
+  };
+
+  const mistakes = {
+    formation_unprotected: { title: 'Формирование без защиты', fix: 'В неделю пасынкования и обрезки обработайте стебли Глиокладином (лучше с Влипом).' },
+    condensate_unheated: { title: 'Конденсат без подогрева', fix: 'При прогнозе холодной ночи и высокой влажности включайте подогрев труб, а лист закрывайте Микозаром с Влипом.' },
+    chem_killed_enemies: { title: 'Химия уничтожила энтомофагов', fix: 'Биопрепараты (Ловчий, Эндобактерин) совместимы с хищниками — химия обнуляет вложения в энтомофагов.' },
+    enemies_wasted: { title: 'Энтомофаги пропали', fix: 'Живых энтомофагов нельзя хранить: выпускайте в ту же неделю, когда партия пришла.' },
+    mat_unprotected: { title: 'Маты без биозащиты', fix: 'Вносите биопрепараты в маты при высадке и затем ежемесячно — защита в мате выдыхается за 4 недели.' },
+    late_detection: { title: 'Поздно заметили очаг', fix: 'Регулярный обход и ловушки находят болезнь на ранней стадии, когда биопрепарат ещё лечит.' },
+    flood_ignored: { title: 'Перелив оставили как есть', fix: 'Коррекция полива стоит 1 час и убирает перелив — а перелив кормит корневые гнили и психод.' },
+    hot_mat_ignored: { title: 'Перегрев матов', fix: 'При перегреве раствора выше 30° включайте охлаждение — это главный триггер питиоза при летней посадке.' },
+  };
+
+  AG.DATA.text = { ref, mistakes, humNames, tempNames, matNames };
+})(typeof globalThis !== 'undefined' ? globalThis : window);
+
+// ---- sim/state.js ----
+// Состояние сезона, геометрия поля, неделя 0 (подготовка).
+// Поле: ряд r (линия матов с общим капельным поливом) × секция c. Индекс i = r*6 + c.
+(function (g) {
+  const AG = g.AG, D = AG.DATA, S = AG.sim;
+  const R = D.rows, C = D.cols;
+
+  S.rowOf = i => Math.floor(i / C);
+  S.colOf = i => i % C;
+  S.rowCells = r => Array.from({ length: C }, (_, c) => r * C + c);
+  S.neighbors4 = function (i) {
+    const r = S.rowOf(i), c = S.colOf(i), out = [];
+    if (c > 0) out.push(i - 1);
+    if (c < C - 1) out.push(i + 1);
+    if (r > 0) out.push(i - C);
+    if (r < R - 1) out.push(i + C);
+    return out;
+  };
+  S.neighbors8 = function (i) {
+    const r = S.rowOf(i), c = S.colOf(i), out = [];
+    for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
+      if (!dr && !dc) continue;
+      const rr = r + dr, cc = c + dc;
+      if (rr >= 0 && rr < R && cc >= 0 && cc < C) out.push(rr * C + cc);
+    }
+    return out;
+  };
+
+  S.parseSeed = function (input) {
+    const t = String(input == null ? '' : input).trim();
+    if (!t) { const seed = Math.floor(Math.random() * 1e6); return { seed, shown: String(seed) }; }
+    if (/^\d+$/.test(t)) return { seed: Number(t) >>> 0, shown: t };
+    return { seed: AG.hashSeed(t), shown: t };
+  };
+
+  function newCell() {
+    return { dis: {}, pests: {}, enemies: {}, leafProt: [], seen: { dis: {}, pests: {} },
+      trap: null, sanitizeWeeks: 0, chemLoss: 0, wetHit: false };
+  }
+
+  S.newSeason = function (seed, prep) {
+    prep = prep || {};
+    const s = {
+      seed: seed >>> 0, rngState: seed >>> 0, week: 1, over: false,
+      budget: D.start.budget, hours: D.start.hours,
+      stock: AG.clone(D.start.stock), orders: [], arrivedEnemies: {},
+      climate: null, forecast: null, levers: {},
+      cells: Array.from({ length: R * C }, newCell),
+      rows: Array.from({ length: R }, () => ({ matProt: null, noHygieneWeeks: 0, chemMatWeek: 0 })),
+      prepMult: { leaf: 1, botAsco: 1, rootEarly: 1 },
+      crazySourceWeek: prep.disinfectDrip ? null : 2,
+      solutionDisinfected: false,
+      totals: { kg: 0, potentialKg: 0, lostKg: 0, revenue: 0, spend: { prep: 0, products: 0, enemies: 0, climate: 0 } },
+      events: [], mistakes: [], weekActions: [], log: [], history: [],
+    };
+    for (const k of Object.keys(D.prep)) if (prep[k]) {
+      s.budget -= D.prep[k].price; s.totals.spend.prep += D.prep[k].price;
+    }
+    if (prep.disinfectGreenhouse) { s.prepMult.leaf = 0.5; s.prepMult.botAsco = 0.5; }
+    if (prep.gliokladinStructures) s.prepMult.botAsco *= 0.5;
+    if (prep.seedlings) s.prepMult.rootEarly = 0.3;
+    if (prep.matAtPlanting) {
+      const p = D.products[prep.matAtPlanting];
+      const cost = p.price * R * C;
+      s.budget -= cost; s.totals.spend.products += cost;
+      for (const row of s.rows) row.matProt = { productId: prep.matAtPlanting, eff: AG.clone(p.mat), age: 0 };
+    }
+    if (S.rollClimate) {
+      s.climate = S.rollClimate(s, 1);
+      s.nextClimate = S.rollClimate(s, 2); // скрыто от игрока
+      s.forecast = S.rollForecast(s, s.nextClimate, 2);
+    }
+    return s;
+  };
+})(typeof globalThis !== 'undefined' ? globalThis : window);
+
+// ---- sim/climate.js ----
+// Климат недели, прогноз, действие климатических рычагов.
+(function (g) {
+  const AG = g.AG, D = AG.DATA, S = AG.sim;
+
+  S.phaseOf = w => (w <= 3 ? 0 : w <= 9 ? 1 : 2);
+
+  S.rollClimate = function (state, week) {
+    const rng = AG.stateRng(state), ph = D.climatePhases[S.phaseOf(week)];
+    const hum = AG.pick(rng, ph.hum);
+    const temp = D.tempValues[AG.pick(rng, ph.temp)];
+    const mat = D.matValues[AG.pick(rng, ph.mat)];
+    return { hum, temp, mat, cond: temp === 'cold' && hum >= 2 };
+  };
+
+  // Прогноз: каждая ось совпадает с фактом с вероятностью 0,8, иначе — случайное значение фазы.
+  S.rollForecast = function (state, actual, week) {
+    const rng = AG.stateRng(state), ph = D.climatePhases[S.phaseOf(week || state.week + 1)];
+    const f = {
+      hum: rng() < 0.8 ? actual.hum : AG.pick(rng, ph.hum),
+      temp: rng() < 0.8 ? actual.temp : D.tempValues[AG.pick(rng, ph.temp)],
+      mat: rng() < 0.8 ? actual.mat : D.matValues[AG.pick(rng, ph.mat)],
+    };
+    f.cond = f.temp === 'cold' && f.hum >= 2;
+    return f;
+  };
+
+  S.effectiveClimate = function (c, lv) {
+    lv = lv || {};
+    const e = { ...c };
+    if (lv.vent) e.hum = Math.max(0, e.hum - 1);
+    if (lv.humidify) e.hum = Math.min(3, e.hum + 1);
+    if (lv.heat && e.temp === 'cold') e.temp = 'norm';
+    if (lv.coolMat && e.mat === 'hot') e.mat = 'norm';
+    if (lv.irrigFix && e.mat === 'flood') e.mat = 'norm';
+    e.cond = e.temp === 'cold' && e.hum >= 2;
+    return e;
+  };
+
+  S.flags = function (c) {
+    return {
+      dry: c.hum === 0, humHigh: c.hum === 2, humVHigh: c.hum === 3, humGE2: c.hum >= 2,
+      cold: c.temp === 'cold', hot: c.temp === 'hot', cond: !!c.cond,
+      matHot: c.mat === 'hot', matFlood: c.mat === 'flood',
+      dryHot: c.hum === 0 && c.temp === 'hot',
+    };
+  };
+
+  S.climateText = function (c) {
+    const t = D.text;
+    const parts = [t.humNames[c.hum], t.tempNames[c.temp]];
+    if (c.cond) parts.push('конденсат');
+    if (c.mat !== 'norm') parts.push(t.matNames[c.mat]);
+    return parts;
+  };
+})(typeof globalThis !== 'undefined' ? globalThis : window);
+
+// ---- sim/actions.js ----
+// Действия игрока в течение недели. Сначала полная проверка (деньги, часы, дозы),
+// потом изменение состояния — при ошибке состояние не трогается.
+// Лечебные и разовые эффекты не применяются здесь: они пишутся в state.weekActions
+// и срабатывают в endWeek (шаг 1 порядка из спецификации).
+(function (g) {
+  const AG = g.AG, D = AG.DATA, S = AG.sim;
+  const EPS = 1e-9;
+  const ALL = Array.from({ length: D.rows * D.cols }, (_, i) => i);
+
+  function targets(a) {
+    if (a.scope === 'cell') return [a.cell];
+    if (a.scope === 'row') return S.rowCells(a.row);
+    if (a.scope === 'all') return ALL;
+    return [];
+  }
+  function rowsOf(a) {
+    if (a.scope === 'row') return [a.row];
+    if (a.scope === 'all') return Array.from({ length: D.rows }, (_, r) => r);
+    return [];
+  }
+
+  // Возвращает {money, hours, doses:{id:n}, enemies:{id:n}} или {error}.
+  S.actionCost = function (state, a) {
+    const L = D.labor, out = { money: 0, hours: 0, doses: {}, enemies: {} };
+    const p = a.productId ? D.products[a.productId] : null;
+    switch (a.type) {
+      case 'inspect':
+        if (a.scope !== 'cell') return { error: 'bad_scope' };
+        out.hours = L.inspect; break;
+      case 'leaf': {
+        if (!p || !p.modes.includes('leaf')) return { error: 'bad_product' };
+        if (!L.leaf[a.scope]) return { error: 'bad_scope' };
+        const n = targets(a).length;
+        out.hours = L.leaf[a.scope];
+        out.doses[a.productId] = n;
+        if (a.vlip) out.doses.vlip = n;
+        break;
+      }
+      case 'mat': {
+        if (!p || !p.modes.includes('mat')) return { error: 'bad_product' };
+        if (a.scope !== 'row' && a.scope !== 'all') return { error: 'bad_scope' };
+        if (p.matOnlyWeek0) return { error: 'week0_only' };
+        out.hours = L.mat[a.scope];
+        out.doses[a.productId] = targets(a).length;
+        break;
+      }
+      case 'release': {
+        if (!D.enemies[a.enemyId] || !targets(a).length) return { error: 'bad_scope' };
+        const n = targets(a).length;
+        out.hours = L.release * n;
+        out.enemies[a.enemyId] = n;
+        break;
+      }
+      case 'trap':
+        if (a.scope !== 'cell') return { error: 'bad_scope' };
+        out.hours = L.trap; out.money = D.products.trapYellow.price; break;
+      case 'sanitize':
+        if (a.scope !== 'cell') return { error: 'bad_scope' };
+        out.hours = L.sanitize; break;
+      case 'trayHygiene':
+        if (a.scope !== 'row' && a.scope !== 'all') return { error: 'bad_scope' };
+        out.hours = L.trayHygiene * rowsOf(a).length; break;
+      case 'disinfectSolution':
+        if (state.solutionDisinfected) return { error: 'already' };
+        out.money = D.solutionDisinfectPrice; break;
+      case 'order': {
+        const n = Math.floor(a.doses || 0);
+        if (n <= 0) return { error: 'bad_amount' };
+        const item = a.enemyId ? D.enemies[a.enemyId] : p;
+        if (!item) return { error: 'bad_product' };
+        out.money = item.price * n * (a.urgent ? D.urgentMult : 1);
+        break;
+      }
+      case 'lever': {
+        const lv = D.levers[a.lever];
+        if (!lv) return { error: 'bad_lever' };
+        const isOn = !!state.levers[a.lever];
+        if (a.on === isOn) return out;
+        const sign = a.on ? 1 : -1;
+        out.money = lv.price * sign; out.hours = lv.hours * sign;
+        break;
+      }
+      default: return { error: 'bad_action' };
+    }
+    return out;
+  };
+
+  function check(state, a, cost) {
+    if (state.over) return 'season_over';
+    if (cost.error) return cost.error;
+    if (cost.hours > state.hours + EPS) return 'no_hours';
+    if (cost.money > state.budget + EPS) return 'no_budget';
+    for (const [id, n] of Object.entries(cost.doses)) if ((state.stock[id] || 0) < n) return 'no_stock';
+    for (const [id, n] of Object.entries(cost.enemies)) if ((state.arrivedEnemies[id] || 0) < n) return 'no_enemies_arrived';
+    return null;
+  }
+
+  function addLeafProt(cell, productId, eff, weeks) {
+    const ex = cell.leafProt.find(x => x.productId === productId);
+    if (!ex) { cell.leafProt.push({ productId, eff: { ...eff }, weeksLeft: weeks }); return; }
+    for (const [k, v] of Object.entries(eff)) ex.eff[k] = Math.max(ex.eff[k] || 0, v);
+    ex.weeksLeft = Math.max(ex.weeksLeft, weeks);
+  }
+
+  function addMistake(state, code, cells) {
+    state.mistakes.push({ week: state.week, code, cells: cells || [] });
+  }
+
+  // Работа людей в клетке при конденсате без подогрева разносит бактериоз по мокрому листу.
+  function wetWork(state, cells, rng) {
+    const clim = S.effectiveClimate(state.climate, state.levers);
+    if (!clim.cond) return;
+    const rowsWithBact = new Set();
+    state.cells.forEach((c, i) => { if (c.dis.bacterial) rowsWithBact.add(S.rowOf(i)); });
+    for (const i of cells) {
+      const c = state.cells[i];
+      if (c.dis.bacterial || !rowsWithBact.has(S.rowOf(i))) continue;
+      if (rng() < D.diseases.bacterial.wetWork) {
+        c.dis.bacterial = { stage: 1, age: 0 };
+        state.log.push({ week: state.week, code: 'wet_work', cell: i });
+      }
+    }
+  }
+
+  S.applyAction = function (state, a) {
+    const cost = S.actionCost(state, a);
+    const err = check(state, a, cost);
+    if (err) return { ok: false, error: err, state };
+
+    const rng = AG.stateRng(state);
+    state.hours = AG.round(state.hours - cost.hours, 4);
+    state.budget -= cost.money;
+    for (const [id, n] of Object.entries(cost.doses)) state.stock[id] -= n;
+    for (const [id, n] of Object.entries(cost.enemies)) state.arrivedEnemies[id] -= n;
+    const cells = targets(a);
+    const p = a.productId ? D.products[a.productId] : null;
+
+    switch (a.type) {
+      case 'inspect': {
+        const c = state.cells[a.cell];
+        for (const [id, d] of Object.entries(c.dis)) {
+          if (d.stage >= 2 || rng() < 0.5) { c.seen.dis[id] = d.stage; d.spotted = true; }
+        }
+        for (const [id, lvl] of Object.entries(c.pests)) if (lvl > 0) c.seen.pests[id] = lvl;
+        c.seen.inspected = true;
+        wetWork(state, cells, rng);
+        break;
+      }
+      case 'leaf': {
+        if (p.leaf) {
+          const eff = {};
+          for (const [k, v] of Object.entries(p.leaf)) eff[k] = Math.min(0.95, v + (a.vlip ? D.vlipBonus : 0));
+          for (const i of cells) addLeafProt(state.cells[i], a.productId, eff, a.vlip ? D.leafWeeksVlip : D.leafWeeks);
+        }
+        if (p.harvestLoss) for (const i of cells) state.cells[i].chemLoss = Math.max(state.cells[i].chemLoss, p.harvestLoss);
+        if (p.killsEnemies || p.enemyHit) {
+          const hit = new Set(cells);
+          if (p.killsEnemies) for (const i of cells) S.neighbors8(i).forEach(j => hit.add(j));
+          const lost = [];
+          for (const i of hit) {
+            const en = state.cells[i].enemies;
+            if (!Object.keys(en).length) continue;
+            if (p.killsEnemies) { state.cells[i].enemies = {}; lost.push(i); }
+            else for (const k of Object.keys(en)) { en[k].lvl -= p.enemyHit; if (en[k].lvl <= 0) { delete en[k]; lost.push(i); } }
+          }
+          if (lost.length) addMistake(state, 'chem_killed_enemies', lost);
+        }
+        if (p.pests || p.cure) state.weekActions.push({ type: 'leaf', productId: a.productId, cells });
+        wetWork(state, cells, rng);
+        break;
+      }
+      case 'mat': {
+        for (const r of rowsOf(a)) {
+          const row = state.rows[r];
+          if (p.stripsMat) { row.matProt = null; row.chemMatWeek = state.week; continue; }
+          if (p.mat) {
+            const eff = { ...p.mat };
+            if (row.matProt) for (const [k, v] of Object.entries(row.matProt.eff)) eff[k] = Math.max(eff[k] || 0, v);
+            row.matProt = { productId: a.productId, eff, age: 0 };
+          }
+        }
+        if (p.pests || p.cure) state.weekActions.push({ type: 'mat', productId: a.productId, cells, rows: rowsOf(a) });
+        break;
+      }
+      case 'release':
+        for (const i of cells) {
+          const en = state.cells[i].enemies, ex = en[a.enemyId];
+          en[a.enemyId] = { lvl: Math.max(ex ? ex.lvl : 0, 1), age: ex ? ex.age : 0, sachet: D.enemies[a.enemyId].sachet || 0 };
+        }
+        break;
+      case 'trap':
+        state.cells[a.cell].trap = a.color;
+        state.totals.spend.products += cost.money;
+        break;
+      case 'sanitize':
+        state.weekActions.push({ type: 'sanitize', cells });
+        wetWork(state, cells, rng);
+        break;
+      case 'trayHygiene':
+        for (const r of rowsOf(a)) state.rows[r].noHygieneWeeks = 0;
+        break;
+      case 'disinfectSolution':
+        state.solutionDisinfected = true;
+        state.totals.spend.climate += cost.money;
+        break;
+      case 'order': {
+        const n = Math.floor(a.doses);
+        const isEnemy = !!a.enemyId, id = a.enemyId || a.productId;
+        state.totals.spend[isEnemy ? 'enemies' : 'products'] += cost.money;
+        if (a.urgent) {
+          if (isEnemy) state.arrivedEnemies[id] = (state.arrivedEnemies[id] || 0) + n;
+          else state.stock[id] = (state.stock[id] || 0) + n;
+        } else state.orders.push({ id, n, kind: isEnemy ? 'enemy' : 'product', week: state.week + 1 });
+        break;
+      }
+      case 'lever':
+        state.levers[a.lever] = !!a.on;
+        state.totals.spend.climate += cost.money;
+        break;
+    }
+    return { ok: true, state };
+  };
+
+  // Проверка пачки действий целиком (с учётом срочной докупки buy = {productId: n}).
+  // Возвращает код ошибки или null — тогда все действия пройдут.
+  S.batchCheck = function (state, actions, buy) {
+    if (state.over) return 'season_over';
+    let money = 0, hours = 0; const doses = {}, enemies = {};
+    for (const a of actions) {
+      const c = S.actionCost(state, a);
+      if (c.error) return c.error;
+      money += c.money; hours += c.hours;
+      for (const [k, v] of Object.entries(c.doses)) doses[k] = (doses[k] || 0) + v;
+      for (const [k, v] of Object.entries(c.enemies)) enemies[k] = (enemies[k] || 0) + v;
+    }
+    for (const [id, n] of Object.entries(buy || {})) money += D.products[id].price * n * D.urgentMult;
+    if (hours > state.hours + EPS) return 'no_hours';
+    if (money > state.budget + EPS) return 'no_budget';
+    for (const [id, n] of Object.entries(doses)) if ((state.stock[id] || 0) + ((buy || {})[id] || 0) < n) return 'no_stock';
+    for (const [id, n] of Object.entries(enemies)) if ((state.arrivedEnemies[id] || 0) < n) return 'no_enemies_arrived';
+    return null;
+  };
+
+  S.errorText = {
+    no_hours: 'Не хватает рабочих часов на этой неделе.',
+    no_budget: 'Не хватает бюджета.',
+    no_stock: 'Нет нужного количества доз на складе — закажите (срочно, если нужно сейчас).',
+    bad_scope: 'Так применить нельзя: в мат — только ряд или вся теплица, обход и ловушки — только клетка.',
+    week0_only: 'Трихоцин вносится только при высадке.',
+    season_over: 'Сезон окончен.',
+    no_enemies_arrived: 'Энтомофаги ещё не пришли — закажите партию.',
+    already: 'Уже сделано на этой неделе.',
+    bad_product: 'Это средство так не применяется.',
+    bad_amount: 'Укажите количество.',
+    bad_lever: 'Нет такого рычага.',
+    bad_action: 'Неизвестное действие.',
+  };
+})(typeof globalThis !== 'undefined' ? globalThis : window);
+
+// ---- sim/disease.js ----
+// Болезни: заражение, развитие по стадиям, лечение, видимость.
+(function (g) {
+  const AG = g.AG, D = AG.DATA, S = AG.sim;
+  const N = D.rows * D.cols;
+  const IDS = Object.keys(D.diseases);
+
+  S.protectionEff = function (state, i, id) {
+    const dz = D.diseases[id];
+    if (dz.kind === 'leaf') {
+      let e = 0;
+      for (const p of state.cells[i].leafProt) if (p.weeksLeft > 0 && p.eff[id]) e = Math.max(e, p.eff[id]);
+      return e;
+    }
+    const mp = state.rows[S.rowOf(i)].matProt;
+    if (!mp || !mp.eff[id]) return 0;
+    const k = D.matDecay[mp.age];
+    return k ? mp.eff[id] * k : 0;
+  };
+
+  function climBase(id, f) {
+    const b = D.diseases[id].base;
+    let v = null;
+    for (const [flag, p] of b.max) if (f[flag]) v = Math.max(v == null ? 0 : v, p);
+    const favorable = v != null;
+    if (v == null) v = b.else;
+    for (const [flag, p] of b.add || []) if (f[flag]) v += p;
+    return { v, favorable };
+  }
+  S.isFavorable = (id, f) => climBase(id, f).favorable;
+
+  function rowHasPsychoda(state, r) {
+    return S.rowCells(r).some(i => (state.cells[i].pests.psychoda || 0) > 0);
+  }
+
+  S.baseProb = function (state, i, id, f) {
+    const dz = D.diseases[id];
+    let v = climBase(id, f).v;
+    const w = state.week;
+    if (dz.formation && D.formationWeeks.includes(w)) v *= dz.formation;
+    if (w <= 4 && dz.kind === 'leaf') v *= (id === 'botrytis' || id === 'ascochyta') ? state.prepMult.botAsco : state.prepMult.leaf;
+    if (id === 'rootRot') {
+      if (rowHasPsychoda(state, S.rowOf(i))) v += D.pests.psychoda.rootRotAdd;
+      if (w <= 2) v *= state.prepMult.rootEarly;
+    }
+    return v;
+  };
+
+  // Давление соседей: массив вероятностей заражения от источников стадии ≥2.
+  S.pressure = function (state, id, f) {
+    const sp = D.diseases[id].spread;
+    const miss = new Array(N).fill(1);
+    let p = sp.p;
+    if (sp.pHum && f.humGE2) p = sp.pHum;
+    if (id === 'crazyRoot' && state.solutionDisinfected) p *= 0.5;
+    for (let i = 0; i < N; i++) {
+      const d = state.cells[i].dis[id];
+      if (!d || d.stage < 2) continue;
+      let ts;
+      if (sp.mode === 'rowAdj') ts = S.neighbors4(i).filter(j => S.rowOf(j) === S.rowOf(i));
+      else if (sp.mode === 'rowAny') ts = S.rowCells(S.rowOf(i)).filter(j => j !== i);
+      else if (sp.mode === 'n8') ts = S.neighbors8(i);
+      else ts = S.neighbors4(i);
+      for (const j of ts) miss[j] *= 1 - p;
+    }
+    return miss.map(m => 1 - m);
+  };
+
+  // «Прыжки» мучнистой росы: каждый источник с вероятностью jump заражает случайную клетку.
+  S.jumps = function (state, id, rng) {
+    const sp = D.diseases[id].spread, out = [];
+    if (!sp.jump) return out;
+    for (let i = 0; i < N; i++) {
+      const d = state.cells[i].dis[id];
+      if (d && d.stage >= 2 && rng() < sp.jump) out.push(Math.min(N - 1, Math.floor(rng() * N)));
+    }
+    return out;
+  };
+
+  S.infectionProb = function (state, i, id, f, pres) {
+    pres = pres || S.pressure(state, id, f);
+    const p = Math.min(1, S.baseProb(state, i, id, f) + (pres[i] || 0));
+    return p * (1 - S.protectionEff(state, i, id));
+  };
+
+  function mistake(state, code, cells) { state.mistakes.push({ week: state.week, code, cells }); }
+
+  S.rollInfections = function (state, clim, rng) {
+    const f = S.flags(clim), events = [];
+    if (state.crazySourceWeek === state.week) {
+      const r1 = Math.floor(rng() * D.rows), r2 = (r1 + 1 + Math.floor(rng() * (D.rows - 1))) % D.rows;
+      for (const r of [r1, r2]) {
+        const i = r * D.cols + Math.floor(rng() * D.cols);
+        state.cells[i].dis.crazyRoot = { stage: 1, age: 0, fresh: true };
+      }
+      events.push({ code: 'crazy_source' });
+    }
+    for (const id of IDS) {
+      const pres = S.pressure(state, id, f);
+      const jumped = new Set(S.jumps(state, id, rng));
+      const newCells = [];
+      for (let i = 0; i < N; i++) {
+        const c = state.cells[i];
+        if (c.dis[id]) continue;
+        const hit = jumped.has(i) ? rng() < 1 - S.protectionEff(state, i, id) : rng() < S.infectionProb(state, i, id, f, pres);
+        if (hit) { c.dis[id] = { stage: 1, age: 0, fresh: true }; newCells.push(i); }
+      }
+      if (!newCells.length) continue;
+      events.push({ code: 'infect', disease: id, cells: newCells });
+      const dz = D.diseases[id];
+      if (dz.formation && D.formationWeeks.includes(state.week)) {
+        const unprot = newCells.filter(i => !S.protectionEff(state, i, id));
+        if (unprot.length) mistake(state, 'formation_unprotected', unprot);
+      }
+      if (dz.kind === 'root') {
+        const unprot = newCells.filter(i => !state.rows[S.rowOf(i)].matProt);
+        if (unprot.length) mistake(state, 'mat_unprotected', unprot);
+      }
+    }
+    return events;
+  };
+
+  S.progress = function (state, clim, rng) {
+    const f = S.flags(clim), events = [];
+    for (let i = 0; i < N; i++) {
+      const c = state.cells[i];
+      for (const [id, d] of Object.entries(c.dis)) {
+        const dz = D.diseases[id];
+        if (d.fresh) { delete d.fresh; continue; }
+        if (d.hold) { delete d.hold; continue; }
+        const before = d.stage;
+        if (d.stage === 1) {
+          d.age++;
+          if (d.age >= dz.latency) { d.stage = 2; d.age = 0; }
+        } else if (d.stage < dz.maxStage) {
+          if (S.isFavorable(id, f) || rng() < 0.5) d.stage += (dz.condBoost && f.cond) ? dz.condBoost : 1;
+          d.stage = Math.min(d.stage, dz.maxStage);
+        }
+        if (d.stage !== before) events.push({ code: 'stage', disease: id, cell: i, from: before, to: d.stage });
+        if (before < 3 && d.stage >= 3 && !d.spotted) mistake(state, 'late_detection', [i]);
+      }
+    }
+    return events;
+  };
+
+  // Шаг 1 конца недели: лечение и санитария по записанным действиям.
+  S.applyTreatments = function (state, rng) {
+    const events = [];
+    for (const a of state.weekActions) {
+      if (a.type === 'sanitize') {
+        for (const i of a.cells) {
+          const c = state.cells[i];
+          c.dis = {}; c.seen.dis = {};
+          c.sanitizeWeeks = D.sanitizeWeeks;
+        }
+        events.push({ code: 'sanitize', cells: a.cells });
+        continue;
+      }
+      const p = D.products[a.productId];
+      if (p.cure) {
+        for (const i of a.cells) for (const [id, d] of Object.entries(state.cells[i].dis)) {
+          const dz = D.diseases[id];
+          if (dz.kind !== p.cure.kind || (p.cure.only && !p.cure.only.includes(id))) continue;
+          if (d.stage >= 2 && rng() < p.cure.p) {
+            d.stage -= p.cure.d || 1; d.age = 0;
+            if (d.stage <= 0) delete state.cells[i].dis[id];
+          }
+        }
+        continue;
+      }
+      const effMap = a.type === 'leaf' ? p.leaf : p.mat;
+      if (!effMap) continue;
+      for (const i of a.cells) {
+        const c = state.cells[i];
+        for (const [id, d] of Object.entries(c.dis)) {
+          if (!effMap[id] || D.diseases[id].kind !== (a.type === 'leaf' ? 'leaf' : 'root')) continue;
+          const eff = S.protectionEff(state, i, id);
+          if (d.stage === 1 && rng() < eff) delete c.dis[id];
+          else if (d.stage === 2 && rng() < eff) d.hold = true;
+        }
+      }
+    }
+    return events;
+  };
+
+  S.worstLoss = function (cell) {
+    let l = 0;
+    for (const [id, d] of Object.entries(cell.dis)) {
+      const dz = D.diseases[id];
+      const v = dz.fixedLoss != null ? (d.stage >= 2 ? dz.fixedLoss : 0) : D.stageLoss[d.stage];
+      l = Math.max(l, v);
+    }
+    return l;
+  };
+
+  // Что видно игроку без обхода в начале новой недели.
+  S.refreshSeen = function (state, rng) {
+    for (const c of state.cells) {
+      c.seen.dis = {}; c.seen.inspected = false;
+      for (const [id, d] of Object.entries(c.dis)) {
+        if (d.stage >= 3 || (d.stage === 2 && rng() < 0.3)) {
+          c.seen.dis[id] = d.stage;
+          if (d.stage === 2) d.spotted = true;
+        }
+      }
+    }
+  };
+})(typeof globalThis !== 'undefined' ? globalThis : window);
+
+// ---- sim/pests.js ----
+// Вредители и энтомофаги. Порядок в конце недели: обработки → появление → рост →
+// распространение → хищники.
+(function (g) {
+  const AG = g.AG, D = AG.DATA, S = AG.sim;
+  const N = D.rows * D.cols;
+  const PESTS = Object.keys(D.pests);
+
+  function rate(id, f) {
+    const r = D.pests[id].rate;
+    if (r.both != null && f.dry && f.hot) return r.both;
+    if (r.hotOrDry != null && (f.dry || f.hot)) return r.hotOrDry;
+    if (r.hot != null && f.hot) return r.hot;
+    if (r.flood != null && f.matFlood) return r.flood;
+    return r.else;
+  }
+
+  S.applyPestTreatments = function (state, rng) {
+    for (const a of state.weekActions) {
+      const p = a.productId && D.products[a.productId];
+      if (!p || !p.pests) continue;
+      for (const i of a.cells) {
+        const ps = state.cells[i].pests;
+        for (const [id, eff] of Object.entries(p.pests)) {
+          if (ps[id] > 0 && rng() < eff.p) ps[id] = Math.max(0, ps[id] - eff.d);
+        }
+      }
+    }
+  };
+
+  S.appearPests = function (state, clim, rng) {
+    const f = S.flags(clim);
+    for (let i = 0; i < N; i++) {
+      const c = state.cells[i];
+      for (const id of PESTS) {
+        if (c.pests[id] > 0) continue;
+        const pd = D.pests[id];
+        if (pd.onlyFlood && !f.matFlood && state.rows[S.rowOf(i)].noHygieneWeeks < 4) continue;
+        if (rng() < pd.appear) { c.pests[id] = 1; (c.newPests || (c.newPests = {}))[id] = true; }
+      }
+    }
+  };
+
+  S.growPests = function (state, clim, rng) {
+    const f = S.flags(clim);
+    for (const c of state.cells) for (const id of PESTS) {
+      if (!(c.pests[id] > 0)) continue;
+      if (c.newPests && c.newPests[id]) continue; // появился на этой неделе
+      const r = rate(id, f);
+      const inc = Math.floor(r) + (rng() < r - Math.floor(r) ? 1 : 0);
+      c.pests[id] = Math.min(4, c.pests[id] + inc);
+    }
+  };
+
+  S.spreadPests = function (state, clim, rng) {
+    for (const c of state.cells) delete c.newPests;
+    const snap = state.cells.map(c => ({ ...c.pests }));
+    for (let i = 0; i < N; i++) for (const id of PESTS) {
+      if (!(snap[i][id] >= 2)) continue;
+      let ts = S.neighbors4(i);
+      if (id === 'psychoda') ts = ts.filter(j => S.rowOf(j) === S.rowOf(i));
+      for (const j of ts) {
+        const c = state.cells[j];
+        if (!(c.pests[id] > 0) && rng() < D.pests[id].spread) c.pests[id] = 1;
+      }
+    }
+  };
+
+  S.stepEnemies = function (state, clim) {
+    const f = S.flags(clim);
+    for (const c of state.cells) {
+      for (const [id, e] of Object.entries(c.enemies)) {
+        const ed = D.enemies[id];
+        if (e.age === 0) { e.age = 1; continue; } // неделя приживания
+        if (e.age === 1 && e.lvl < 2) e.lvl = 2; // прижился — активен
+        const blocked = ed.blockedBy && f[ed.blockedBy];
+        const preyBefore = ed.targets.map(t => c.pests[t] || 0);
+        if (!blocked) for (const t of ed.targets) {
+          if (c.pests[t] > 0) c.pests[t] = Math.max(0, c.pests[t] - (e.lvl >= 3 ? 2 : 1));
+        }
+        const anyPrey = preyBefore.some(x => x >= 1);
+        const hadSachet = e.sachet > 0;
+        if (hadSachet) e.sachet--;
+        if (!blocked && preyBefore.some(x => x >= 2)) e.lvl = Math.min(3, e.lvl + 1);
+        else if (!anyPrey && !hadSachet) e.lvl -= 1;
+        e.age++;
+        if (e.lvl <= 0) delete c.enemies[id];
+      }
+    }
+  };
+
+  S.pestLoss = function (cell) {
+    let keep = 1;
+    for (const [id, lvl] of Object.entries(cell.pests)) {
+      if (!lvl) continue;
+      const pd = D.pests[id];
+      if (pd.lossPerLvl) keep *= 1 - pd.lossPerLvl * lvl;
+      else keep *= 1 - D.pestLoss[lvl];
+      if (pd.sooty && lvl >= 3) keep *= 1 - pd.sooty;
+    }
+    return 1 - keep;
+  };
+
+  function trapArea(i) { return [i, ...S.neighbors8(i)]; }
+  function trapPests(color) { return PESTS.filter(id => D.pests[id].trap === color); }
+
+  S.trapView = function (state, i) {
+    const color = state.cells[i].trap, out = {};
+    if (!color) return out;
+    const ids = trapPests(color);
+    for (const j of trapArea(i)) for (const id of ids) {
+      const lvl = state.cells[j].pests[id] || 0;
+      if (lvl > 0) out[id] = Math.max(out[id] || 0, lvl);
+    }
+    return out;
+  };
+
+  S.refreshSeenPests = function (state) {
+    for (const c of state.cells) {
+      c.seen.pests = {};
+      for (const [id, lvl] of Object.entries(c.pests)) if (lvl >= 3) c.seen.pests[id] = lvl;
+    }
+    state.cells.forEach((c, i) => {
+      if (!c.trap) return;
+      const ids = trapPests(c.trap);
+      for (const j of trapArea(i)) for (const id of ids) {
+        const lvl = state.cells[j].pests[id] || 0;
+        if (lvl > 0) state.cells[j].seen.pests[id] = lvl;
+      }
+    });
+  };
+})(typeof globalThis !== 'undefined' ? globalThis : window);
+
+// ---- sim/week.js ----
+// Конец недели: строгий порядок расчёта (спецификация, раздел 5), урожай, разбор, финал.
+(function (g) {
+  const AG = g.AG, D = AG.DATA, S = AG.sim;
+  const N = D.rows * D.cols;
+  const FULL_KG = D.yieldCurve.reduce((a, b) => a + b, 0) * 10000;
+
+  S.cellHarvest = function (cell, week) {
+    const pot = D.yieldCurve[week] * D.cellArea;
+    const keep = (1 - S.worstLoss(cell)) * (1 - S.pestLoss(cell)) * (1 - (cell.chemLoss || 0)) *
+      (1 - (cell.sanitizeWeeks > 0 ? D.sanitizeLoss : 0));
+    return pot * keep;
+  };
+
+  const flagPhrase = {
+    cond: 'конденсат на листьях после холодной ночи', humVHigh: 'очень высокая влажность', humHigh: 'высокая влажность',
+    dry: 'сухой воздух', hot: 'жара', cold: 'холодная ночь', matHot: 'перегрев матов', matFlood: 'перелив матов',
+  };
+  const rowsText = cells => {
+    const rows = [...new Set(cells.map(i => S.rowOf(i) + 1))].sort((a, b) => a - b);
+    return (rows.length === 1 ? 'ряд ' : 'ряды ') + rows.join(', ');
+  };
+  const cellsWord = n => n % 10 === 1 && n % 100 !== 11 ? 'клетке' : 'клетках';
+
+  function causeText(state, id, f, cells) {
+    const dz = D.diseases[id], parts = [];
+    for (const [flag] of [...dz.base.max, ...(dz.base.add || [])]) if (f[flag] && flagPhrase[flag]) parts.push(flagPhrase[flag]);
+    if (dz.formation && D.formationWeeks.includes(state.week)) parts.push('раны после формирования растений');
+    if (!parts.length) parts.push('распространение от соседних очагов');
+    const unprot = cells.filter(i => !S.protectionEff(state, i, id)).length;
+    if (unprot) parts.push(dz.kind === 'leaf' ? 'лист без защиты' : 'мат без биозащиты');
+    return parts.join(', ');
+  }
+
+  // Видимые итоги недели для разбора: до 4 событий, по весу ущерба.
+  function review(state, f, before, chemCells, harvestLossPct) {
+    const ev = [];
+    const name = id => (D.text.ref[id] || {}).name || id;
+    for (const id of Object.keys(D.diseases)) {
+      const cells = [];
+      state.cells.forEach((c, i) => { const v = c.seen.dis[id]; if (v >= 2 && !(before[i].dis[id] >= v)) cells.push(i); });
+      if (!cells.length) continue;
+      const w = cells.reduce((s, i) => s + state.cells[i].dis[id].stage, 0);
+      ev.push({ week: state.week, code: 'disease', id, cells, weight: w * 3,
+        text: `${name(id)}: симптомы в ${cells.length} ${cellsWord(cells.length)} (${rowsText(cells)}). Причина: ${causeText(state, id, f, cells)}.` });
+    }
+    for (const id of Object.keys(D.pests)) {
+      const cells = [];
+      state.cells.forEach((c, i) => { const v = c.seen.pests[id]; if (v >= 3 && !(before[i].pests[id] >= v)) cells.push(i); });
+      if (!cells.length) continue;
+      ev.push({ week: state.week, code: 'pest', id, cells, weight: cells.length * 4,
+        text: `${name(id)}: высокая численность в ${cells.length} ${cellsWord(cells.length)} (${rowsText(cells)}). ${D.text.ref[id].conditions}` });
+    }
+    if (chemCells.length) ev.push({ week: state.week, code: 'chem', cells: chemCells, weight: chemCells.length * 2,
+      text: `Срок ожидания после химии: сбор в ${chemCells.length} ${cellsWord(chemCells.length)} сократился.` });
+    if (f.cond) ev.push({ week: state.week, code: 'cond', cells: [], weight: 5,
+      text: 'Конденсат на листьях: идеальные условия для пероноспороза и бактериоза. Подогрев труб снимает его.' });
+    if (f.matFlood) ev.push({ week: state.week, code: 'flood', cells: [], weight: 4,
+      text: 'Перелив матов: корневые гнили и психоды получили преимущество. Коррекция полива стоит 1 час.' });
+    if (f.matHot) ev.push({ week: state.week, code: 'hotmat', cells: [], weight: 4,
+      text: 'Перегрев матов выше 30°: главный триггер питиоза. Нужно охлаждение раствора.' });
+    if (!ev.length) ev.push({ week: state.week, code: 'calm', cells: [], weight: 0,
+      text: harvestLossPct > 1 ? `Новых видимых очагов нет. Потери урожая на неделе — ${AG.round(harvestLossPct)}%.` : 'Неделя прошла спокойно: новых видимых очагов нет.' });
+    return ev.sort((a, b) => b.weight - a.weight).slice(0, 4);
+  }
+
+  S.endWeek = function (state, expectedWeek) {
+    if (state.over) return { ok: false, error: 'season_over', state, events: [] };
+    if (expectedWeek != null && expectedWeek !== state.week) return { ok: false, error: 'stale', state, events: [] };
+    const rng = AG.stateRng(state);
+    const clim = S.effectiveClimate(state.climate, state.levers);
+    const f = S.flags(clim);
+    const before = state.cells.map(c => ({ dis: { ...c.seen.dis }, pests: { ...c.seen.pests } }));
+
+    // 1. обработки этой недели
+    S.applyTreatments(state, rng);
+    S.applyPestTreatments(state, rng);
+    // 2–3. болезни
+    S.rollInfections(state, clim, rng);
+    S.progress(state, clim, rng);
+    // 4. вредители, затем энтомофаги
+    S.appearPests(state, clim, rng);
+    S.growPests(state, clim, rng);
+    S.spreadPests(state, clim, rng);
+    S.stepEnemies(state, clim);
+    // 5. урожай
+    let kg = 0; const chemCells = [];
+    const pot = D.yieldCurve[state.week] * 10000;
+    state.cells.forEach((c, i) => { kg += S.cellHarvest(c, state.week); if (c.chemLoss) chemCells.push(i); });
+    state.totals.kg += kg; state.totals.potentialKg += pot; state.totals.lostKg += pot - kg;
+    state.totals.revenue += kg * D.pricePerKg;
+    // 6. ошибки, старение защиты, закрытие недели
+    const m = code => state.mistakes.push({ week: state.week, code, cells: [] });
+    if (f.cond) m('condensate_unheated');
+    if (f.matFlood) m('flood_ignored');
+    if (f.matHot) m('hot_mat_ignored');
+    if (Object.values(state.arrivedEnemies).some(n => n > 0)) m('enemies_wasted');
+    state.arrivedEnemies = {};
+
+    for (const c of state.cells) {
+      c.leafProt = c.leafProt.map(p => ({ ...p, weeksLeft: p.weeksLeft - 1 })).filter(p => p.weeksLeft > 0);
+      if (c.sanitizeWeeks > 0) c.sanitizeWeeks--;
+      c.chemLoss = 0;
+    }
+    for (const r of state.rows) {
+      if (r.matProt) { r.matProt.age++; if (r.matProt.age >= D.matDecay.length) r.matProt = null; }
+      r.noHygieneWeeks++;
+    }
+    state.history.push({ week: state.week, climate: clim, kg, potential: pot });
+    S.refreshSeen(state, rng);
+    S.refreshSeenPests(state);
+    const events = review(state, f, before, chemCells, pot ? (1 - kg / pot) * 100 : 0);
+    state.events.push(...events);
+
+    state.weekActions = []; state.levers = {}; state.solutionDisinfected = false;
+    state.hours = D.start.hours;
+    if (state.week >= D.weeks) { state.over = true; return { ok: true, state, events }; }
+    state.week++;
+    state.climate = state.nextClimate || S.rollClimate(state, state.week);
+    if (state.week < D.weeks) {
+      state.nextClimate = S.rollClimate(state, state.week + 1);
+      state.forecast = S.rollForecast(state, state.nextClimate, state.week + 1);
+    } else { state.nextClimate = null; state.forecast = null; }
+    const keep = [];
+    for (const o of state.orders) {
+      if (o.week > state.week) { keep.push(o); continue; }
+      const bag = o.kind === 'enemy' ? state.arrivedEnemies : state.stock;
+      bag[o.id] = (bag[o.id] || 0) + o.n;
+    }
+    state.orders = keep;
+    return { ok: true, state, events };
+  };
+
+  S.rankFor = pct => (pct > 85 ? 'Главный агроном' : pct >= 70 ? 'Агроном' : 'Агроном-стажёр');
+
+  S.finalReport = function (state) {
+    const t = state.totals;
+    const spend = t.spend.prep + t.spend.products + t.spend.enemies + t.spend.climate;
+    const pct = (t.kg / FULL_KG) * 100;
+    const agg = {};
+    for (const mk of state.mistakes) {
+      const a = agg[mk.code] || (agg[mk.code] = { code: mk.code, count: 0, weeks: [], cells: 0 });
+      a.count++; a.cells += (mk.cells || []).length;
+      if (!a.weeks.includes(mk.week)) a.weeks.push(mk.week);
+    }
+    const mistakes = Object.values(agg)
+      .sort((a, b) => (b.count + b.cells / 6) - (a.count + a.cells / 6))
+      .slice(0, 5)
+      .map(a => ({ ...a, ...D.text.mistakes[a.code] }));
+    return {
+      kgPerM2: t.kg / 10000, pctPotential: pct, revenue: t.revenue, spend, spendBy: { ...t.spend },
+      net: t.revenue - spend,
+      preventionVsLoss: { spent: spend, lostRub: (FULL_KG - t.kg) * D.pricePerKg },
+      mistakes, rank: S.rankFor(pct),
+    };
+  };
+})(typeof globalThis !== 'undefined' ? globalThis : window);
+
+// ---- render.js ----
+// Изометрическое поле теплицы (SVG). Ночь, свет ДНаТ, антрацитовый каркас.
+// Координаты сетки: u — вдоль ряда (секция), v — поперёк (номер ряда). Экран: x=(u−v)·TW/2, y=(u+v)·TH/2.
+(function (g) {
+  const AG = g.AG, D = AG.DATA, S = AG.sim;
+  const R = AG.render = {};
+  const TW = 60, TH = 34;
+  const N = D.rows * D.cols;
+  const GH = 9;          // высота лотка над полом
+  const PH = 80;         // высота шпалеры
+  const WALL = 132;      // высота стеклянных стен
+  const MINX = -200, MINY = -WALL - 18, W = 400, H = 382;
+  R.ZOOM = 1.6;
+
+  const f = n => Math.round(n * 10) / 10;
+  const P = (u, v, z = 0) => ({ x: (u - v) * TW / 2, y: (u + v) * TH / 2 - z });
+  const pts = arr => arr.map(p => `${f(p.x)},${f(p.y)}`).join(' ');
+  const poly = (cls, arr, extra = '') => `<polygon class="${cls}" points="${pts(arr)}"${extra}/>`;
+  const hsh = (i, k) => { let x = (i + 1) * 374761393 + (k + 1) * 668265263; x = (x ^ (x >>> 13)) * 1274126177; return ((x ^ (x >>> 16)) >>> 0) / 4294967296; };
+
+  R.geometry = () => ({ width: W, height: H, minX: MINX, minY: MINY, tileW: TW, tileH: TH });
+  R.base = i => P(S.colOf(i) + 0.5, S.rowOf(i) + 0.5, GH + 4);
+  R.plantCenter = i => { const b = R.base(i); return { x: b.x, y: b.y - 34 }; };
+  R.cellAt = function (x, y) {
+    let best = null, bd = 30 * 30;
+    for (let i = 0; i < N; i++) {
+      const c = R.plantCenter(i), d = (c.x - x) ** 2 + ((c.y - y) * 0.8) ** 2;
+      if (d < bd) { bd = d; best = i; }
+    }
+    return best;
+  };
+
+  // ---------- сцена ----------
+  function floor() {
+    const a = P(-0.35, -0.35), b = P(6.35, -0.35), c = P(6.35, 6.35), d = P(-0.35, 6.35);
+    const drop = p => ({ x: p.x, y: p.y + 14 });
+    const out = [poly('slab-top', [a, b, c, d]), poly('slab-left', [d, c, drop(c), drop(d)]), poly('slab-right', [c, b, drop(b), drop(c)])];
+    // дорожки и трубы отопления «рельсы» между рядами
+    for (let r = 0; r <= D.rows; r++) {
+      const v = r === 0 ? -0.05 : r === D.rows ? 6.05 : r;
+      out.push(`<line class="rail" x1="${f(P(0, v - 0.07).x)}" y1="${f(P(0, v - 0.07).y)}" x2="${f(P(6, v - 0.07).x)}" y2="${f(P(6, v - 0.07).y)}"/>`);
+      out.push(`<line class="rail" x1="${f(P(0, v + 0.07).x)}" y1="${f(P(0, v + 0.07).y)}" x2="${f(P(6, v + 0.07).x)}" y2="${f(P(6, v + 0.07).y)}"/>`);
+    }
+    // световые пятна ДНаТ на полу
+    for (let r = 0; r < D.rows; r++) for (let c = 0; c < D.cols; c += 2) {
+      const p = P(c + 1, r + 0.5);
+      out.push(`<ellipse class="glow" cx="${f(p.x)}" cy="${f(p.y)}" rx="${TW * 0.95}" ry="${TH * 0.95}"/>`);
+    }
+    return out.join('');
+  }
+
+  function walls() {
+    const out = [];
+    // задняя правая стена (v = −0.35) и задняя левая (u = −0.35)
+    const wall = (from, to) => {
+      const top = p => ({ x: p.x, y: p.y - WALL });
+      out.push(poly('glass', [from, to, top(to), top(from)]));
+      const steps = 6;
+      for (let k = 0; k <= steps; k++) {
+        const t = k / steps;
+        const p = { x: from.x + (to.x - from.x) * t, y: from.y + (to.y - from.y) * t };
+        const cls = k % 3 === 0 ? 'post' : 'mullion';
+        out.push(`<line class="${cls}" x1="${f(p.x)}" y1="${f(p.y)}" x2="${f(p.x)}" y2="${f(p.y - WALL)}"/>`);
+      }
+      out.push(`<line class="beam" x1="${f(from.x)}" y1="${f(from.y - WALL)}" x2="${f(to.x)}" y2="${f(to.y - WALL)}"/>`);
+      out.push(`<line class="sill" x1="${f(from.x)}" y1="${f(from.y - 18)}" x2="${f(to.x)}" y2="${f(to.y - 18)}"/>`);
+    };
+    wall(P(-0.35, -0.35), P(6.35, -0.35));
+    wall(P(-0.35, -0.35), P(-0.35, 6.35));
+    // фермы крыши — от задних стен к ближним углам
+    for (const k of [2, 4, 6]) {
+      const a = P(k - 0.35, -0.35, WALL), b = P(k - 0.35, 3, WALL + 34);
+      out.push(`<line class="truss" x1="${f(a.x)}" y1="${f(a.y)}" x2="${f(b.x)}" y2="${f(b.y)}"/>`);
+      const c = P(-0.35, k - 0.35, WALL), d = P(3, k - 0.35, WALL + 34);
+      out.push(`<line class="truss" x1="${f(c.x)}" y1="${f(c.y)}" x2="${f(d.x)}" y2="${f(d.y)}"/>`);
+    }
+    return out.join('');
+  }
+
+  function cornerPosts() {
+    const out = [];
+    for (const p of [P(6.35, -0.35), P(-0.35, 6.35)]) {
+      out.push(`<rect class="post-box" x="${f(p.x - 3)}" y="${f(p.y - WALL)}" width="6" height="${WALL}"/>`);
+    }
+    return out.join('');
+  }
+
+  function lamps() {
+    const out = [];
+    for (let r = 0; r < D.rows; r++) for (let c = 0; c < D.cols; c += 2) {
+      const p = P(c + 1, r + 0.5, PH + 22);
+      out.push(`<g class="lamp-unit"><line class="hanger" x1="${f(p.x)}" y1="${f(p.y - 10)}" x2="${f(p.x)}" y2="${f(p.y)}"/>` +
+        `<polygon class="lamp-body" points="${f(p.x - 9)},${f(p.y)} ${f(p.x + 9)},${f(p.y)} ${f(p.x + 6)},${f(p.y + 4)} ${f(p.x - 6)},${f(p.y + 4)}"/>` +
+        `<ellipse class="lamp-bulb" cx="${f(p.x)}" cy="${f(p.y + 4.5)}" rx="4.5" ry="1.6"/></g>`);
+    }
+    return `<g class="lamps">${out.join('')}</g>`;
+  }
+
+  // ---------- клетка ----------
+  function tile(i) {
+    const r = S.rowOf(i), c = S.colOf(i);
+    return poly('tile', [P(c + 0.06, r + 0.06), P(c + 0.94, r + 0.06), P(c + 0.94, r + 0.94), P(c + 0.06, r + 0.94)]);
+  }
+
+  function gutter(i, state) {
+    const r = S.rowOf(i), c = S.colOf(i);
+    const v0 = r + 0.34, v1 = r + 0.66, u0 = c + 0.02, u1 = c + 0.98, zt = GH + 4;
+    const mp = state.rows[r].matProt;
+    const fresh = mp && D.matDecay[mp.age] >= 1;
+    const out = [];
+    // ножки
+    out.push(`<line class="leg" x1="${f(P(c + 0.5, v1).x)}" y1="${f(P(c + 0.5, v1).y)}" x2="${f(P(c + 0.5, v1, GH).x)}" y2="${f(P(c + 0.5, v1, GH).y)}"/>`);
+    out.push(poly('gutter-side', [P(u0, v1, GH), P(u1, v1, GH), P(u1, v1, zt), P(u0, v1, zt)]));
+    if (c === D.cols - 1) out.push(poly('gutter-end', [P(u1, v0, GH), P(u1, v1, GH), P(u1, v1, zt), P(u1, v0, zt)]));
+    out.push(poly('mat' + (mp ? ' mat-prot' + (fresh ? '' : ' mat-prot-fading') : ''), [P(u0, v0, zt), P(u1, v0, zt), P(u1, v1, zt), P(u0, v1, zt)]));
+    const d0 = P(u0, r + 0.5, zt + 0.5), d1 = P(u1, r + 0.5, zt + 0.5);
+    out.push(`<line class="drip" x1="${f(d0.x)}" y1="${f(d0.y)}" x2="${f(d1.x)}" y2="${f(d1.y)}"/>`);
+    return out.join('');
+  }
+
+  function leafPath(x, y, s, dir) {
+    const k = s * dir;
+    return `M${f(x)} ${f(y)} c${f(k * 0.2)} ${f(-s * 0.55)} ${f(k * 0.75)} ${f(-s * 0.75)} ${f(k * 1.05)} ${f(-s * 0.45)} ` +
+      `c${f(k * 0.12)} ${f(s * 0.18)} ${f(-k * 0.02)} ${f(s * 0.32)} ${f(-k * 0.12)} ${f(s * 0.42)} ` +
+      `c${f(-k * 0.2)} ${f(s * 0.3)} ${f(-k * 0.6)} ${f(s * 0.32)} ${f(-k * 0.93)} ${f(s * 0.03)}z`;
+  }
+  const worstSeen = cell => Object.values(cell.seen.dis).reduce((a, b) => Math.max(a, b), 0);
+
+  function plant(i, cell, week) {
+    const r = S.rowOf(i), c = S.colOf(i);
+    const b = R.base(i), top = b.y - PH + 12;
+    const worst = worstSeen(cell), droop = cell.seen.dis.rootRot >= 2;
+    const tone = worst >= 4 ? ' dead' : worst >= 3 ? ' sick' : '';
+    const parts = [];
+    // шпалерная проволока вдоль ряда
+    const w0 = P(c, r + 0.5, PH + 4), w1 = P(c + 1, r + 0.5, PH + 4);
+    parts.push(`<line class="wire" x1="${f(w0.x)}" y1="${f(w0.y)}" x2="${f(w1.x)}" y2="${f(w1.y)}"/>`);
+    parts.push(`<line class="twine" x1="${f(b.x)}" y1="${f(top)}" x2="${f(w0.x + TW / 4)}" y2="${f(w0.y + TH / 4)}"/>`);
+    parts.push(`<path class="stem" d="M${f(b.x)} ${f(b.y)} C${f(b.x - 3)} ${f(b.y - 22)} ${f(b.x + 3)} ${f(top + 24)} ${f(b.x)} ${f(top)}"/>`);
+    const n = cell.sanitizeWeeks > 0 ? 3 : 6;
+    const leaves = [];
+    for (let k = 0; k < n; k++) {
+      const ly = top + 6 + k * ((b.y - top - 12) / 6);
+      const dir = k % 2 ? -1 : 1;
+      const sz = 16 - k * 0.5;
+      const rot = droop ? dir * 40 : dir * (-8 + hsh(i, k) * 10);
+      leaves.push({ x: b.x, y: ly, dir, sz });
+      const tr = ` transform="rotate(${f(rot)} ${f(b.x)} ${f(ly)})"`;
+      parts.push(`<path class="leaf-under${tone}"${tr} d="${leafPath(b.x, ly, sz, dir)}"/>`);
+      parts.push(`<path class="leaf-top${tone}"${tr} d="${leafPath(b.x + dir * 0.6, ly - 1.4, sz * 0.82, dir)}"/>`);
+    }
+    if (week >= 4 && worst < 4) {
+      const nf = worst >= 3 ? 1 : 3;
+      for (let k = 0; k < nf; k++) {
+        const fy = top + 20 + k * 11, fx = b.x + (k % 2 ? -5 : 5);
+        parts.push(`<rect class="fruit" x="${f(fx - 1.8)}" y="${f(fy)}" width="3.6" height="12" rx="1.8"/><rect class="fruit-hl" x="${f(fx - 0.9)}" y="${f(fy + 2)}" width="1" height="7" rx=".5"/>`);
+      }
+    }
+    return { svg: parts.join(''), leaves, cx: b.x, ground: b.y, top };
+  }
+
+  function symptoms(i, cell, p) {
+    const out = [];
+    for (const [id, st] of Object.entries(cell.seen.dis)) {
+      if (st < 2) continue;
+      const n = st === 2 ? 3 : st === 3 ? 6 : 10;
+      const d = [];
+      const onLeaf = k => {
+        const L = p.leaves[k % p.leaves.length];
+        return { x: L.x + L.dir * (3 + hsh(i, k) * L.sz * 0.75), y: L.y - 2 - hsh(i, k + 50) * L.sz * 0.5 };
+      };
+      if (id === 'powdery') for (let k = 0; k < n; k++) { const q = onLeaf(k); d.push(`<circle cx="${f(q.x)}" cy="${f(q.y)}" r="${f(1.1 + hsh(i, k + 9) * 1.2)}"/>`); }
+      if (id === 'downy') for (let k = 0; k < n; k++) { const q = onLeaf(k); d.push(`<rect x="${f(q.x - 1.7)}" y="${f(q.y - 1.3)}" width="3.4" height="2.6"/>`); }
+      if (id === 'bacterial') for (let k = 0; k < n; k++) { const q = onLeaf(k); d.push(`<polygon points="${f(q.x)},${f(q.y - 2)} ${f(q.x + 2)},${f(q.y)} ${f(q.x)},${f(q.y + 1.6)} ${f(q.x - 1.8)},${f(q.y)}"/>`); }
+      if (id === 'botrytis') { const sy = p.ground - 12 - hsh(i, 3) * 14; d.push(`<circle cx="${f(p.cx)}" cy="${f(sy)}" r="${st >= 3 ? 5 : 3.5}"/><circle class="fuzz" cx="${f(p.cx)}" cy="${f(sy)}" r="${st >= 3 ? 7.5 : 5.5}"/>`); }
+      if (id === 'ascochyta') for (let k = 0; k < Math.min(n, 5); k++) d.push(`<ellipse cx="${f(p.cx)}" cy="${f(p.top + 10 + k * 10)}" rx="1.9" ry="${st >= 3 ? 3.2 : 2.2}"/>`);
+      if (id === 'rootRot') d.push(`<rect x="${f(p.cx - 2.6)}" y="${f(p.ground - 7)}" width="5.2" height="8" rx="1.5"/>`);
+      if (id === 'crazyRoot') for (let k = 0; k < (st >= 3 ? 6 : 3); k++) {
+        const dx = (hsh(i, k) - 0.5) * 26;
+        d.push(`<path d="M${f(p.cx)} ${f(p.ground + 1)} q${f(dx / 2)} ${f(5 + hsh(i, k + 4) * 3)} ${f(dx)} ${f(4 + hsh(i, k + 7) * 5)}"/>`);
+      }
+      out.push(`<g class="sym sym-${id} st${st}">${d.join('')}</g>`);
+    }
+    return out.join('');
+  }
+
+  function pests(i, cell, p) {
+    const out = [];
+    for (const [id, lvl] of Object.entries(cell.seen.pests)) {
+      for (let k = 0; k < lvl; k++) {
+        const L = p.leaves[(k + 1) % p.leaves.length];
+        const x = f(L.x + L.dir * (4 + hsh(i, k + 20) * 8)), y = f(L.y - 4 - hsh(i, k + 30) * 5);
+        let sh;
+        if (id === 'whitefly') sh = `<path d="M${x} ${y} l-2.6 -1.7 l0.4 2.8z M${x} ${y} l2.6 -1.7 l-0.4 2.8z"/>`;
+        else if (id === 'thrips') sh = `<rect x="${x}" y="${y}" width="4.2" height="1.2" rx=".6" transform="rotate(${Math.round(hsh(i, k) * 60 - 30)} ${x} ${y})"/>`;
+        else if (id === 'mite') sh = `<circle cx="${x}" cy="${y}" r="1.3"/>` + (k === 0 ? `<path class="web" d="M${x} ${y} l${f(L.dir * 9)} -6"/>` : '');
+        else { const mx = f(p.cx - 12 + k * 6), my = f(p.ground + 2); sh = `<path d="M${mx} ${my} c-2 -2.5 -3.5 0 0 2 c3.5 -2 2 -4.5 0 -2z"/>`; }
+        out.push(`<g class="pest pest-${id}">${sh}</g>`);
+      }
+    }
+    return out.join('');
+  }
+
+  function extras(i, cell, p) {
+    const out = [];
+    if (cell.leafProt.length) out.push(`<ellipse class="prot-leaf" cx="${f(p.cx)}" cy="${f((p.top + p.ground) / 2)}" rx="16" ry="${f((p.ground - p.top) / 2 + 3)}"/>`);
+    for (const [id, e] of Object.entries(cell.enemies)) {
+      if (D.enemies[id].sachet) out.push(`<g class="enemy enemy-${id}"><line x1="${f(p.cx + 2)}" y1="${f(p.top + 26)}" x2="${f(p.cx + 6)}" y2="${f(p.top + 30)}"/><rect x="${f(p.cx + 4)}" y="${f(p.top + 30)}" width="6.5" height="8.5" rx="1"/></g>`);
+      else out.push(`<g class="enemy enemy-${id}"><circle cx="${f(p.cx - 9)}" cy="${f(p.top + 34)}" r="1.7"/><circle cx="${f(p.cx - 6)}" cy="${f(p.top + 38)}" r="1.7"/>${e.lvl >= 2 ? `<circle cx="${f(p.cx - 11)}" cy="${f(p.top + 39)}" r="1.7"/>` : ''}</g>`);
+    }
+    if (cell.trap) out.push(`<g class="trap trap-${cell.trap}"><line x1="${f(p.cx + 12)}" y1="${f(p.ground - 2)}" x2="${f(p.cx + 12)}" y2="${f(p.top + 20)}"/><rect x="${f(p.cx + 8)}" y="${f(p.top + 8)}" width="8" height="12" rx="1"/></g>`);
+    // маркер над растением: болезнь или вспышка вредителя
+    const ws = worstSeen(cell);
+    const pestHi = Object.values(cell.seen.pests).some(l => l >= 3);
+    if (ws >= 2 || pestHi) {
+      const cls = ws >= 3 || pestHi ? 'pin pin-bad' : 'pin pin-warn';
+      out.push(`<g class="${cls}"><circle class="pin-halo" cx="${f(p.cx)}" cy="${f(p.top - 9)}" r="6.5"/><circle cx="${f(p.cx)}" cy="${f(p.top - 9)}" r="3.6"/></g>`);
+    }
+    return out.join('');
+  }
+
+  R.field = function (state, opts) {
+    opts = opts || {};
+    const sel = new Set(opts.selected || []), hl = new Set(opts.highlight || []);
+    const order = Array.from({ length: N }, (_, i) => i).sort((a, b) => (S.rowOf(a) + S.colOf(a)) - (S.rowOf(b) + S.colOf(b)) || S.rowOf(a) - S.rowOf(b));
+    const out = [`<svg class="field" viewBox="${MINX} ${MINY} ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="Теплица: 6 рядов по 6 секций">`];
+    out.push(`<defs><radialGradient id="hps" cx="50%" cy="20%" r="75%"><stop offset="0" stop-color="var(--hps)" stop-opacity=".22"/><stop offset="1" stop-color="var(--hps)" stop-opacity="0"/></radialGradient></defs>`);
+    out.push(`<rect class="sky" x="${MINX}" y="${MINY}" width="${W}" height="${H}"/><rect x="${MINX}" y="${MINY}" width="${W}" height="${H}" fill="url(#hps)"/>`);
+    out.push(walls(), floor());
+    for (const i of order) {
+      const cell = state.cells[i];
+      const cls = ['cell'];
+      if (sel.has(i)) cls.push('is-selected');
+      if (hl.has(i)) cls.push('is-target');
+      const p = plant(i, cell, state.week);
+      out.push(`<g data-cell="${i}" class="${cls.join(' ')}" aria-label="Ряд ${S.rowOf(i) + 1}, секция ${S.colOf(i) + 1}">`);
+      out.push(tile(i), gutter(i, state), p.svg, symptoms(i, cell, p), pests(i, cell, p), extras(i, cell, p));
+      if (sel.has(i)) out.push(`<ellipse class="sel-ring" cx="${f(p.cx)}" cy="${f((p.top + p.ground) / 2)}" rx="17" ry="${f((p.ground - p.top) / 2 + 5)}"/>`);
+      out.push(`</g><!--/c${i}-->`);
+    }
+    // номера рядов у правого края
+    for (let r = 0; r < D.rows; r++) {
+      const p = P(6.75, r + 0.5);
+      out.push(`<text class="row-num" x="${f(p.x)}" y="${f(p.y + 4)}" text-anchor="middle">${r + 1}</text>`);
+    }
+    out.push(cornerPosts(), '</svg>');
+    return out.join('');
+  };
+})(typeof globalThis !== 'undefined' ? globalThis : window);
+
+// ---- ui.js ----
+// Интерфейс: старт, игра, карточки, разбор, справочник, финал.
+(function (g) {
+  const AG = g.AG, D = AG.DATA, S = AG.sim, T = D.text;
+  const $app = () => document.getElementById('app');
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const money = x => (Math.abs(x) >= 1000 ? AG.round(x / 1000, 2).toLocaleString('ru-RU') + ' млн ₽' : Math.round(x).toLocaleString('ru-RU') + ' тыс. ₽');
+  const hrs = x => AG.round(x, 2).toLocaleString('ru-RU') + ' ч';
+  const name = id => (T.ref[id] || {}).name || (D.products[id] || {}).name || id;
+  const stageName = ['здорово', 'скрытая инфекция', 'ранние симптомы', 'развитие', 'сильное поражение'];
+  const pestLvl = ['', 'единично', 'заметно', 'много', 'вспышка'];
+  const ALL = Array.from({ length: 36 }, (_, i) => i);
+
+  const G = {
+    screen: 'start', state: null, seedShown: '', prep: { disinfectGreenhouse: false, disinfectDrip: false, gliokladinStructures: false, seedlings: false, matAtPlanting: null },
+    tab: 'look', tool: null, sel: new Set(), selRows: new Set(), sheet: null, toast: null, hints: true, qty: {}, busy: false, lastReview: null,
+  };
+
+  // ---------- инструменты ----------
+  const TABS = [
+    ['look', 'Осмотр'], ['leaf', 'По листу'], ['mat', 'В мат'], ['enemies', 'Энтомоф.'],
+    ['traps', 'Ловушки'], ['climate', 'Климат'], ['chem', 'Химия'], ['stock', 'Склад'],
+  ];
+  const HINTS = {
+    look: 'Обход находит болезнь до симптомов, пока биопрепарат ещё лечит. Нажмите на растение — увидите, что с ним.',
+    leaf: 'Профилактика по листу работает неделю, с Влипом — две. Перед неделями формирования (3, 6, 9, 12) закройте стебли Глиокладином.',
+    mat: 'Защита в мате выдыхается за 4 недели. Вносите биопрепараты ежемесячно, на весь ряд или теплицу.',
+    enemies: 'Энтомофагов выпускают заранее: неделя уходит на приживание. Пришедшую партию нельзя хранить.',
+    traps: 'Ловушка показывает вредителей в квадрате 3×3 вокруг себя без обхода.',
+    climate: 'Сырость кормит болезни, сухость и жара — клеща и трипса. Рычаги действуют одну неделю.',
+    chem: 'Химия лечит быстро, но срок ожидания режет сбор, а инсектицид убивает энтомофагов вокруг.',
+    stock: 'Обычный заказ приходит на следующей неделе. Срочный — сразу, но в полтора раза дороже.',
+  };
+  function toolsFor(tab) {
+    const prod = (id, mode) => ({ kind: mode, productId: id });
+    switch (tab) {
+      case 'look': return [{ kind: 'inspect' }, { kind: 'sanitize' }, { kind: 'tray' }];
+      case 'leaf': return ['gliokladin', 'alirinGamair', 'mikozar', 'lovchiy', 'endobacterin'].map(id => prod(id, 'leaf'));
+      case 'mat': return ['gliokladin', 'alirinGamair', 'mikozar', 'boverin'].map(id => prod(id, 'mat'));
+      case 'enemies': return Object.keys(D.enemies).map(id => ({ kind: 'release', enemyId: id }));
+      case 'traps': return [{ kind: 'trap', color: 'yellow' }, { kind: 'trap', color: 'blue' }];
+      case 'chem': return [prod('chemFungLeaf', 'leaf'), prod('chemFungMat', 'mat'), prod('chemInsect', 'leaf')];
+      default: return [];
+    }
+  }
+  const scopesFor = t => ({ inspect: ['cell'], sanitize: ['cell'], tray: ['row', 'all'], mat: ['row', 'all'], leaf: ['cell', 'row', 'all'], release: ['cell', 'row', 'all'], trap: ['cell'] }[t.kind]);
+  const sameTool = (a, b) => a && b && a.kind === b.kind && a.productId === b.productId && a.enemyId === b.enemyId && a.color === b.color;
+
+  function targetsText(p, mode) {
+    const ids = [...(mode !== 'mat' ? Object.keys(p.leaf || {}) : []), ...(mode !== 'leaf' ? Object.keys(p.mat || {}) : []), ...Object.keys(p.pests || {})];
+    if (p.cure && p.cure.kind === 'leaf') return 'листовые болезни';
+    if (p.cure) return 'корневые гнили';
+    return [...new Set(ids)].map(id => (T.ref[id] || {}).short || id).join(', ');
+  }
+  function toolLabel(t) {
+    const s = G.state;
+    if (t.kind === 'inspect') return { title: 'Обход', sub: 'клетка, 0,5 ч — находит скрытое' };
+    if (t.kind === 'sanitize') return { title: 'Санитарная чистка', sub: 'клетка, 1 ч — удалить очаг, сбор −30% на 2 нед.' };
+    if (t.kind === 'tray') return { title: 'Гигиена лотков', sub: 'ряд, 1 ч — против психод' };
+    if (t.kind === 'trap') return { title: t.color === 'yellow' ? 'Жёлтая ловушка' : 'Синяя ловушка', sub: t.color === 'yellow' ? 'белокрылка, психоды' : 'трипсы' };
+    if (t.kind === 'release') {
+      const n = s.arrivedEnemies[t.enemyId] || 0;
+      return { title: T.ref[t.enemyId].name, sub: `против: ${D.enemies[t.enemyId].targets.map(x => T.ref[x].short).join(', ')}`, tag: n ? `пришло ${n}` : 'не заказан', zero: !n };
+    }
+    const p = D.products[t.productId], n = s.stock[t.productId] || 0;
+    return { title: p.name, sub: 'против: ' + targetsText(p, t.kind), tag: `склад ${n}`, zero: !n, chem: p.chem };
+  }
+
+  // ---------- построение действий из выбора ----------
+  function buildActions() {
+    const t = G.tool; if (!t) return [];
+    const base = { inspect: 'inspect', sanitize: 'sanitize', tray: 'trayHygiene', mat: 'mat', leaf: 'leaf', release: 'release', trap: 'trap' }[t.kind];
+    const extra = { productId: t.productId, enemyId: t.enemyId, color: t.color, vlip: t.kind === 'leaf' && G.vlip && !D.products[t.productId].chem };
+    const scope = G.scope;
+    if (scope === 'all') return [{ type: base, scope: 'all', ...extra }];
+    if (scope === 'row') return [...G.selRows].sort().map(r => ({ type: base, scope: 'row', row: r, ...extra }));
+    return [...G.sel].sort((a, b) => a - b).map(i => ({ type: base, scope: 'cell', cell: i, ...extra }));
+  }
+  function totalCost(actions) {
+    const out = { money: 0, hours: 0, doses: {}, enemies: {}, error: null };
+    for (const a of actions) {
+      const c = S.actionCost(G.state, a);
+      if (c.error) { out.error = c.error; continue; }
+      out.money += c.money; out.hours += c.hours;
+      for (const [k, v] of Object.entries(c.doses)) out.doses[k] = (out.doses[k] || 0) + v;
+      for (const [k, v] of Object.entries(c.enemies)) out.enemies[k] = (out.enemies[k] || 0) + v;
+    }
+    return out;
+  }
+  function shortage(cost) {
+    const miss = {};
+    for (const [id, n] of Object.entries(cost.doses)) { const m = n - (G.state.stock[id] || 0); if (m > 0) miss[id] = m; }
+    return miss;
+  }
+  const urgentPrice = miss => Object.entries(miss).reduce((s, [id, n]) => s + D.products[id].price * n * D.urgentMult, 0);
+
+  function applyActions(actions, buyUrgent) {
+    const s = G.state;
+    const err = S.batchCheck(s, actions, buyUrgent);
+    if (err) return toast((S.errorText[err] || err) + ' Ничего не применено — уменьшите выбор.');
+    if (buyUrgent) {
+      for (const [id, n] of Object.entries(buyUrgent)) {
+        const r = S.applyAction(s, { type: 'order', productId: id, doses: n, urgent: true });
+        if (!r.ok) return toast(S.errorText[r.error]);
+      }
+    }
+    let done = 0;
+    for (const a of actions) {
+      const r = S.applyAction(s, a);
+      if (!r.ok) { toast(S.errorText[r.error] || r.error); break; }
+      done++;
+    }
+    if (done) { G.sel.clear(); G.selRows.clear(); if (!G.toast) toast('Готово.', true); }
+    render();
+  }
+
+  function toast(msg, ok) { G.toast = { msg, ok }; render(); }
+
+  // ---------- экраны ----------
+  function startScreen() {
+    const pr = G.prep;
+    const matOpts = [[null, 'Без внесения', 0], ['gliokladin', 'Глиокладин', D.products.gliokladin.price * 36], ['trichocin', 'Трихоцин', D.products.trichocin.price * 36], ['mikozar', 'Микозар', D.products.mikozar.price * 36]];
+    let cost = 0;
+    for (const k of Object.keys(D.prep)) if (pr[k]) cost += D.prep[k].price;
+    const mo = matOpts.find(m => m[0] === pr.matAtPlanting); cost += mo[2];
+    if (!G.preview) { G.preview = S.newSeason(7, {}); G.preview.week = 6; }
+    return `<div class="hero">
+        <span class="label">Защищённый грунт</span>
+        <h1>Агроном по защите</h1>
+        <p>Огурец на светокультуре, блок 1 га, оборот 16 недель с высадки в конце августа. Соберите урожай и не сожгите бюджет защиты.</p>
+        <div class="board">${AG.render.field(G.preview, {})}</div>
+      </div>
+      <section class="panel">
+        <h2>Неделя 0: подготовка теплицы</h2>
+        <p class="small muted">До высадки ещё можно убрать стартовый запас инфекции. Всё оплачивается из бюджета агронома — ${money(D.start.budget)} на оборот.</p>
+        <div class="prep">
+          ${Object.entries(D.prep).map(([k, p]) => `<button class="switch" data-act="prep" data-k="${k}" aria-pressed="${!!pr[k]}"><span><b>${p.name}</b><small>${money(p.price)}. ${p.hint}</small></span><i class="knob"></i></button>`).join('')}
+        </div>
+        <h3>Внесение в маты при высадке</h3>
+        <div class="seg" role="group" aria-label="Внесение в маты">
+          ${matOpts.map(([id, n]) => `<button data-act="matPlant" data-id="${id || ''}" aria-pressed="${pr.matAtPlanting === id}">${n}</button>`).join('')}
+        </div>
+        <p class="small muted">${mo[0] ? `${mo[1]}: ${money(mo[2])}, защита матов на 4 недели.` : 'Маты останутся без биозащиты.'}</p>
+        <label class="field-input" for="seed"><span class="small">Номер сезона — у всех, кто введёт тот же номер, будет одинаковая погода и вспышки</span>
+          <input id="seed" inputmode="numeric" autocomplete="off" placeholder="случайный" value="${esc(G.seedShown)}"></label>
+        <dl class="kv"><dt>Подготовка</dt><dd>${money(cost)}</dd><dt>Останется на сезон</dt><dd>${money(D.start.budget - cost)}</dd></dl>
+      </section>`;
+  }
+  function startDock() {
+    return `<button class="btn primary" data-act="begin">Высадить рассаду</button><button class="btn" data-act="ref">Справочник болезней и вредителей</button>`;
+  }
+
+  function weatherHtml() {
+    const s = G.state, raw = s.climate, eff = S.effectiveClimate(raw, s.levers);
+    const chips = [];
+    const humRisk = raw.hum === 0 || raw.hum === 3;
+    chips.push(`<span class="chip ${raw.hum !== eff.hum ? 'fixed' : humRisk ? 'risk' : ''}">${T.humNames[raw.hum]}</span>`);
+    if (raw.hum !== eff.hum) chips.push(`<span class="chip">→ ${T.humNames[eff.hum]}</span>`);
+    if (raw.temp !== 'norm') chips.push(`<span class="chip ${eff.temp !== raw.temp ? 'fixed' : 'risk'}">${T.tempNames[raw.temp]}</span>`);
+    if (raw.cond) chips.push(`<span class="chip ${eff.cond ? 'risk' : 'fixed'}">конденсат</span>`);
+    if (raw.mat !== 'norm') chips.push(`<span class="chip ${eff.mat !== raw.mat ? 'fixed' : 'risk'}">${T.matNames[raw.mat]}</span>`);
+    const fc = s.forecast ? S.climateText(s.forecast).join(', ') : 'последняя неделя оборота';
+    const form = D.formationWeeks.includes(s.week) ? '<span class="chip risk">формирование растений</span>' : '';
+    return `<div class="weather">${chips.join('')}${form}<span class="forecast small">Прогноз: ${fc}</span></div>`;
+  }
+
+  function panelHtml() {
+    const s = G.state, tab = G.tab;
+    const hint = G.hints && s.week <= 3 ? `<div class="hint"><span>${HINTS[tab]}</span><button data-act="hints">Скрыть</button></div>` : '';
+    if (tab === 'climate') return hint + climatePanel();
+    if (tab === 'stock') return hint + stockPanel();
+    const tools = toolsFor(tab);
+    let body = `<div class="tools">${tools.map(t => {
+      const l = toolLabel(t);
+      return `<button class="tool${l.chem ? ' chem' : ''}" data-act="tool" data-t='${esc(JSON.stringify(t))}' aria-pressed="${sameTool(t, G.tool)}"><b>${esc(l.title)}</b><small>${esc(l.sub)}</small>${l.tag ? `<small class="stock-tag${l.zero ? ' zero' : ''}">${l.tag}</small>` : ''}</button>`;
+    }).join('')}</div>`;
+    if (G.tool) {
+      const scopes = scopesFor(G.tool);
+      const nm = { cell: 'Клетки', row: 'Ряды', all: 'Вся теплица' };
+      if (scopes.length > 1) body += `<div class="seg" role="group" aria-label="Где применить">${scopes.map(sc => `<button data-act="scope" data-sc="${sc}" aria-pressed="${G.scope === sc}">${nm[sc]}</button>`).join('')}</div>`;
+      if (G.tool.kind === 'leaf' && !D.products[G.tool.productId].chem) body += `<button class="switch" data-act="vlip" aria-pressed="${!!G.vlip}"><span><b>С Влипом</b><small>действует 2 недели вместо 1 и сильнее. Склад Влипа: ${s.stock.vlip || 0}</small></span><i class="knob"></i></button>`;
+      const instr = G.scope === 'all' ? 'Обработка всей теплицы.' : G.scope === 'row' ? 'Нажмите на ряды теплицы.' : G.tool.kind === 'inspect' ? 'Нажмите на растение — сразу осмотрите его.' : 'Нажмите на растения.';
+      body += `<p class="small muted">${instr}</p>`;
+      if (G.tool.kind === 'release' && !(s.arrivedEnemies[G.tool.enemyId] > 0)) body += `<p class="warnline">Партии нет. Закажите на вкладке «Склад» — обычный заказ придёт на следующей неделе.</p>`;
+    } else body += `<p class="small muted">Выберите средство или нажмите на растение, чтобы посмотреть его состояние.</p>`;
+    if (tab === 'mat') body += `<button class="btn" data-act="solution" ${s.solutionDisinfected ? 'disabled' : ''}>Обеззаразить раствор — ${money(D.solutionDisinfectPrice)} ${s.solutionDisinfected ? '(сделано)' : ''}</button><p class="small muted">Вдвое замедляет бешеный корень на эту неделю.</p>`;
+    if (tab === 'chem') body += `<p class="warnline">Срок ожидания: фунгицид −40% сбора с клетки на неделе, инсектоакарицид −70% и гибель энтомофагов в клетке и вокруг. Фунгицид в мат снимает биозащиту ряда.</p>`;
+    return hint + body;
+  }
+
+  function climatePanel() {
+    const s = G.state;
+    return `<div class="list">${Object.entries(D.levers).map(([k, lv]) => {
+      const cost = [lv.price ? money(lv.price) : '', lv.hours ? hrs(lv.hours) : ''].filter(Boolean).join(', ');
+      return `<button class="switch" data-act="lever" data-k="${k}" aria-pressed="${!!s.levers[k]}"><span><b>${lv.name}</b><small>${lv.hint}. ${cost} на неделю</small></span><i class="knob"></i></button>`;
+    }).join('')}</div>`;
+  }
+
+  function stockPanel() {
+    const s = G.state;
+    const items = [...Object.keys(D.products).filter(id => !D.products[id].modes.includes('trap') && id !== 'trichocin').map(id => ['p', id]),
+      ...Object.keys(D.enemies).map(id => ['e', id])];
+    const pend = s.orders.length ? `<p class="small">В пути: ${s.orders.map(o => `${name(o.id)} ×${o.n}`).join(', ')} — придёт на неделе ${s.orders[0].week}.</p>` : '';
+    return pend + `<div class="list">${items.map(([kind, id]) => {
+      const it = kind === 'p' ? D.products[id] : D.enemies[id];
+      const have = kind === 'p' ? (s.stock[id] || 0) : (s.arrivedEnemies[id] || 0);
+      const q = G.qty[id] || (kind === 'e' ? 36 : 36);
+      return `<div class="row-item"><b>${name(id)}</b>
+        <div class="stepper"><button data-act="qty" data-id="${id}" data-d="-6" aria-label="меньше">−</button><output class="num">${q}</output><button data-act="qty" data-id="${id}" data-d="6" aria-label="больше">+</button></div>
+        <span class="meta">${kind === 'p' ? 'на складе' : 'пришло'} ${have}. ${money(it.price)} за дозу на клетку. ${it.chem ? 'Химия.' : ''}</span>
+        <div class="btn-row" style="grid-column:1/-1"><button class="btn" data-act="order" data-kind="${kind}" data-id="${id}">Заказать — ${money(it.price * q)}</button><button class="btn" data-act="order" data-kind="${kind}" data-id="${id}" data-urgent="1">Срочно — ${money(it.price * q * D.urgentMult)}</button></div>
+      </div>`;
+    }).join('')}</div>`;
+  }
+
+  function gameScreen() {
+    const s = G.state;
+    const hl = G.tool && G.scope !== 'all' ? ALL : [];
+    const sel = G.scope === 'row' ? ALL.filter(i => G.selRows.has(S.rowOf(i))) : [...G.sel];
+    if (G.sheet && G.sheet.type === 'cell') sel.push(G.sheet.i);
+    const lowB = s.budget < 60, lowH = s.hours < 2;
+    return `<header class="top">
+        <div class="title"><span class="label">Теплица №${esc(G.seedShown)}, огурец</span><b>Неделя ${s.week}<span> из 16</span></b></div>
+        <div class="res"><div class="pill${lowB ? ' low' : ''}"><b>${Math.round(s.budget)}</b><small>тыс. ₽</small></div><div class="pill${lowH ? ' low' : ''}"><b>${AG.round(s.hours, 2).toLocaleString('ru-RU')}</b><small>часов</small></div></div>
+        <button class="icon-btn" data-act="ref" aria-label="Справочник">?</button>
+      </header>
+      ${weatherHtml()}
+      <div class="board${G.zoom ? ' zoom' : ''}">
+        <div class="board-tools"><button data-act="zoom" aria-pressed="${!!G.zoom}">${G.zoom ? 'Обычно' : 'Крупнее'}</button></div>
+        <div class="board-scroll" id="board-scroll">${AG.render.field(s, { selected: sel, highlight: hl })}</div>
+      </div>
+      <div class="legend"><span><i style="background:var(--warn)"></i>ранние симптомы</span><span><i style="background:var(--bad)"></i>очаг или вспышка</span><span><i style="background:var(--mat-prot)"></i>биозащита мата и листа</span></div>
+      <nav class="tabs" role="tablist">${TABS.map(([k, n]) => `<button class="tab" role="tab" data-act="tab" data-k="${k}" aria-selected="${G.tab === k}">${n}</button>`).join('')}</nav>
+      <section class="panel">${panelHtml()}</section>
+      ${journalHtml()}`;
+  }
+
+  function journalHtml() {
+    const ev = G.state.events.slice(-8).reverse();
+    if (!ev.length) return '';
+    return `<section class="panel"><span class="label">Журнал</span><div class="journal">${ev.map(e => `<p class="${e.code}"><span>нед. ${e.week}</span><span>${esc(e.text)}</span></p>`).join('')}</div></section>`;
+  }
+
+  function gameDock() {
+    const parts = [];
+    if (G.toast) parts.push(`<div class="toast${G.toast.ok ? ' ok' : ''}">${esc(G.toast.msg)}</div>`);
+    const acts = buildActions();
+    if (G.tool && acts.length && G.tool.kind !== 'inspect') {
+      const c = totalCost(acts);
+      const miss = shortage(c), up = urgentPrice(miss);
+      const what = G.scope === 'all' ? 'вся теплица' : G.scope === 'row' ? `рядов: ${acts.length}` : `клеток: ${acts.length}`;
+      const dose = Object.entries(c.doses).map(([id, n]) => `${name(id)} ${n}`).join(', ');
+      parts.push(`<div class="summary">${esc(toolLabel(G.tool).title)}${acts[0].vlip ? ' + Влип' : ''}: ${what}. ${hrs(c.hours)}${c.money ? ', ' + money(c.money) : ''}${dose ? '. Доз: ' + esc(dose) : ''}.</div>`);
+      if (Object.keys(miss).length) parts.push(`<button class="btn primary" data-act="apply" data-buy="1">Купить срочно (${money(up)}) и применить</button>`);
+      else parts.push(`<div class="btn-row"><button class="btn" data-act="clearSel">Сбросить</button><button class="btn primary" data-act="apply">Применить</button></div>`);
+    } else {
+      parts.push(`<button class="btn primary" data-act="endWeek" ${G.busy ? 'disabled' : ''}>Завершить неделю ${G.state.week}</button>`);
+    }
+    return parts.join('');
+  }
+
+  // ---------- листы ----------
+  function cellSheet(i) {
+    const s = G.state, c = s.cells[i];
+    const dis = Object.entries(c.seen.dis);
+    const pests = Object.entries(c.seen.pests);
+    const lines = [];
+    if (dis.length) lines.push(...dis.map(([id, st]) => `<li><button class="link" data-act="refItem" data-id="${id}">${name(id)}</button> — <span class="stage-${st}">${stageName[st]}</span></li>`));
+    if (pests.length) lines.push(...pests.map(([id, l]) => `<li><button class="link" data-act="refItem" data-id="${id}">${name(id)}</button> — ${pestLvl[l]}</li>`));
+    const seenTxt = lines.length ? `<ul class="list" style="padding-left:18px;margin:0">${lines.join('')}</ul>` :
+      `<p class="small">${c.seen.inspected ? 'Обход: видимых симптомов и вредителей нет. Скрытая инфекция находится не всегда.' : 'Симптомов не видно. Скрытую инфекцию и единичных вредителей находит только обход.'}</p>`;
+    const prot = [];
+    for (const p of c.leafProt) prot.push(`${D.products[p.productId].name} по листу: ещё ${p.weeksLeft} нед.`);
+    const mp = s.rows[S.rowOf(i)].matProt;
+    if (mp) prot.push(`${D.products[mp.productId].name} в мате: ${Math.round(D.matDecay[mp.age] * 100)}% силы, ещё ${D.matDecay.length - mp.age} нед.`);
+    const en = Object.entries(c.enemies).map(([id, e]) => `${T.ref[id].name}: ${e.age === 0 ? 'приживается' : 'работает'}${e.sachet ? `, пакетик ещё ${e.sachet} нед.` : ''}`);
+    const trap = c.trap ? Object.entries(S.trapView(s, i)) : null;
+    const canInspect = !c.seen.inspected;
+    return `<div class="sheet-head"><h2>Ряд ${S.rowOf(i) + 1}, секция ${S.colOf(i) + 1}</h2><button class="close" data-act="close" aria-label="Закрыть">×</button></div>
+      <section><h3>Что видно</h3>${seenTxt}</section>
+      ${trap ? `<section><h3>${c.trap === 'yellow' ? 'Жёлтая' : 'Синяя'} ловушка, 3×3 вокруг</h3><p class="small">${trap.length ? trap.map(([id, l]) => `${name(id)}: ${pestLvl[l]}`).join('; ') : 'пусто'}</p></section>` : ''}
+      <section><h3>Защита</h3><p class="small">${prot.length ? prot.join('<br>') : 'Не защищено.'}</p></section>
+      ${en.length ? `<section><h3>Энтомофаги</h3><p class="small">${en.join('<br>')}</p></section>` : ''}
+      <div class="btn-row">${canInspect ? `<button class="btn primary" data-act="inspectCell" data-i="${i}">Обход — 0,5 ч</button>` : ''}${dis.length ? `<button class="btn" data-act="sanitizeCell" data-i="${i}">Санитарная чистка — 1 ч</button>` : ''}</div>`;
+  }
+
+  function reviewSheet() {
+    const r = G.lastReview, s = G.state;
+    const h = s.history[s.history.length - 1];
+    const kgm2 = h.kg / 10000, pot = h.potential / 10000;
+    const next = s.over ? '' : `<section><h3>Неделя ${s.week}</h3><p class="small">${S.climateText(s.climate).join(', ')}${D.formationWeeks.includes(s.week) ? ', формирование растений' : ''}.</p></section>`;
+    return `<div class="sheet-head"><h2>Итоги недели ${h.week}</h2><button class="close" data-act="close" aria-label="Закрыть">×</button></div>
+      <dl class="kv"><dt>Сбор</dt><dd>${AG.round(kgm2, 2).toLocaleString('ru-RU')} кг/м²${pot ? ` из ${pot.toLocaleString('ru-RU')}` : ''}</dd>
+      <dt>За оборот</dt><dd>${AG.round(s.totals.kg / 10000, 1).toLocaleString('ru-RU')} кг/м²</dd></dl>
+      <div class="list">${r.map(e => `<p class="event ${e.code}">${esc(e.text)}</p>`).join('')}</div>
+      ${next}
+      <button class="btn primary" data-act="close">${s.over ? 'Итоги сезона' : 'К неделе ' + s.week}</button>`;
+  }
+
+  function refSheet(focus) {
+    const groups = [['Болезни', Object.keys(D.diseases)], ['Вредители', Object.keys(D.pests)], ['Энтомофаги', Object.keys(D.enemies)]];
+    const card = id => { const r = T.ref[id]; return `<article class="card" id="ref-${id}"><h3>${r.name}</h3><span class="lat">${r.agent}</span>
+      <p><b>Симптомы.</b> ${r.symptoms}</p><p><b>Условия.</b> ${r.conditions}</p>${r.spread ? `<p><b>Распространение.</b> ${r.spread}</p>` : ''}<p><b>Защита.</b> ${r.control}</p></article>`; };
+    const prods = Object.entries(D.products).filter(([, p]) => p.abt).map(([id, p]) => `<article class="card"><h3>${p.name}</h3><p>${id === 'vlip' ? 'Биоприлипатель: обработка по листу держится две недели вместо одной и работает сильнее.' : 'Против: ' + targetsText(p) + '. ' + (p.modes.includes('mat') && p.modes.includes('leaf') ? 'В мат и по листу.' : p.modes.includes('mat') ? (id === 'boverin' ? 'С поливом.' : 'В мат.') : 'По листу.')}</p></article>`).join('');
+    const list = focus ? card(focus) : groups.map(([t, ids]) => `<h3>${t}</h3>${ids.map(card).join('')}`).join('') + `<h3>Препараты АгроБиоТехнологии</h3>${prods}`;
+    return `<div class="sheet-head"><h2>${focus ? 'Справочник' : 'Справочник агронома'}</h2><button class="close" data-act="close" aria-label="Закрыть">×</button></div>${list}${focus ? '<button class="btn" data-act="ref">Весь справочник</button>' : ''}`;
+  }
+
+  function finalScreen() {
+    const f = S.finalReport(G.state);
+    const by = f.spendBy;
+    return `<div class="hero"><p>Сезон №${esc(G.seedShown)} окончен</p><div class="big">${AG.round(f.pctPotential, 1).toLocaleString('ru-RU')}%</div>
+      <p>урожая от потенциала: ${AG.round(f.kgPerM2, 1).toLocaleString('ru-RU')} из 31,7 кг/м²</p><div class="rank">${f.rank}</div></div>
+      <div class="bar" aria-hidden="true"><i style="width:${Math.min(100, f.pctPotential)}%"></i></div>
+      <section class="panel"><h2>Цена профилактики против цены потерь</h2>
+        <dl class="kv"><dt>Потрачено на защиту</dt><dd>${money(f.preventionVsLoss.spent)}</dd><dt>Потеряно урожая</dt><dd style="color:var(--bad)">${money(f.preventionVsLoss.lostRub)}</dd></dl>
+        <p class="small muted">Каждый процент потерь на гектаре огурца — около ${money(31.7 * 100 * D.pricePerKg)} выручки.</p>
+      </section>
+      <section class="panel"><h2>Деньги</h2>
+        <dl class="kv"><dt>Выручка</dt><dd>${money(f.revenue)}</dd><dt>Подготовка</dt><dd>${money(by.prep)}</dd><dt>Препараты и ловушки</dt><dd>${money(by.products)}</dd>
+        <dt>Энтомофаги</dt><dd>${money(by.enemies)}</dd><dt>Климат</dt><dd>${money(by.climate)}</dd><dt>Чистый результат</dt><dd>${money(f.net)}</dd></dl></section>
+      <section class="panel"><h2>Главные ошибки</h2>${f.mistakes.length ? f.mistakes.map(m => `<div class="mistake"><b>${m.title}</b><span class="small muted">Недели: ${m.weeks.slice(0, 6).join(', ')}${m.weeks.length > 6 ? '…' : ''}</span><span class="small">${m.fix}</span></div>`).join('') : '<p>Ошибок не найдено. Отличный сезон.</p>'}</section>`;
+  }
+  const finalDock = () => `<div class="btn-row"><button class="btn" data-act="again" data-same="1">Этот же сезон ещё раз</button><button class="btn primary" data-act="again">Новый сезон</button></div>`;
+
+  // ---------- рендер ----------
+  function render() {
+    const app = $app();
+    let body, dock;
+    if (G.screen === 'start') { body = startScreen(); dock = startDock(); }
+    else if (G.screen === 'final') { body = finalScreen(); dock = finalDock(); }
+    else { body = gameScreen(); dock = gameDock(); }
+    let sheet = '';
+    if (G.sheet) {
+      const inner = G.sheet.type === 'cell' ? cellSheet(G.sheet.i) : G.sheet.type === 'review' ? reviewSheet() : refSheet(G.sheet.focus);
+      sheet = `<div class="sheet-back" data-act="backdrop"><div class="sheet" role="dialog" aria-modal="true">${inner}</div></div>`;
+    }
+    app.innerHTML = `<main class="app">${body}</main><div class="dock"><div class="dock-in">${dock}</div></div>${sheet}`;
+  }
+
+  // ---------- события ----------
+  function onClick(ev) {
+    const svg = ev.target.closest('svg.field');
+    const el = ev.target.closest('[data-act]');
+    if (svg && G.screen === 'game' && !G.sheet) {
+      const ctm = svg.getScreenCTM();
+      if (ctm) {
+        const pt = new DOMPoint(ev.clientX, ev.clientY).matrixTransform(ctm.inverse());
+        const i = AG.render.cellAt(pt.x, pt.y);
+        if (i != null) return onCell(i);
+      }
+      return;
+    }
+    if (!el) return;
+    const act = el.dataset.act, s = G.state;
+    if (act !== 'backdrop') G.toast = null;
+    switch (act) {
+      case 'prep': G.prep[el.dataset.k] = !G.prep[el.dataset.k]; break;
+      case 'matPlant': G.prep.matAtPlanting = el.dataset.id || null; break;
+      case 'begin': {
+        const inp = document.getElementById('seed');
+        const ps = S.parseSeed(inp ? inp.value : '');
+        G.seedShown = ps.shown; G.state = S.newSeason(ps.seed, G.prep); G.screen = 'game'; G.tab = 'look'; G.tool = null;
+        break;
+      }
+      case 'zoom': G.zoom = !G.zoom; render(); if (G.zoom) { const b = document.getElementById('board-scroll'); if (b) b.scrollLeft = (b.scrollWidth - b.clientWidth) / 2; } return;
+      case 'tab': G.tab = el.dataset.k; G.tool = null; G.sel.clear(); G.selRows.clear(); break;
+      case 'tool': {
+        const t = JSON.parse(el.dataset.t);
+        if (sameTool(t, G.tool)) { G.tool = null; break; }
+        G.tool = t; G.scope = scopesFor(t)[0]; G.sel.clear(); G.selRows.clear();
+        if (G.vlip === undefined) G.vlip = true;
+        break;
+      }
+      case 'scope': G.scope = el.dataset.sc; G.sel.clear(); G.selRows.clear(); break;
+      case 'vlip': G.vlip = !G.vlip; break;
+      case 'hints': G.hints = false; break;
+      case 'clearSel': G.sel.clear(); G.selRows.clear(); break;
+      case 'apply': {
+        const acts = buildActions();
+        const miss = el.dataset.buy ? shortage(totalCost(acts)) : null;
+        return applyActions(acts, miss);
+      }
+      case 'lever': {
+        const r = S.applyAction(s, { type: 'lever', lever: el.dataset.k, on: !s.levers[el.dataset.k] });
+        if (!r.ok) return toast(S.errorText[r.error]);
+        break;
+      }
+      case 'solution': { const r = S.applyAction(s, { type: 'disinfectSolution' }); if (!r.ok) return toast(S.errorText[r.error]); break; }
+      case 'qty': { const id = el.dataset.id; G.qty[id] = Math.max(6, Math.min(216, (G.qty[id] || 36) + Number(el.dataset.d))); break; }
+      case 'order': {
+        const id = el.dataset.id, q = G.qty[id] || 36;
+        const a = el.dataset.kind === 'e' ? { type: 'order', enemyId: id, doses: q, urgent: !!el.dataset.urgent } : { type: 'order', productId: id, doses: q, urgent: !!el.dataset.urgent };
+        const r = S.applyAction(s, a);
+        if (!r.ok) return toast(S.errorText[r.error]);
+        return toast(`${name(id)} ×${q}: ${el.dataset.urgent ? 'уже на месте' : 'придёт на неделе ' + (s.week + 1)}.`, true);
+      }
+      case 'endWeek': {
+        if (G.busy) return;
+        G.busy = true;
+        const r = S.endWeek(s, s.week);
+        G.busy = false;
+        if (!r.ok) { if (r.error === 'season_over') G.screen = 'final'; break; }
+        G.lastReview = r.events; G.sheet = { type: 'review' }; G.tool = null; G.sel.clear(); G.selRows.clear();
+        break;
+      }
+      case 'inspectCell': {
+        const r = S.applyAction(s, { type: 'inspect', scope: 'cell', cell: Number(el.dataset.i) });
+        if (!r.ok) return toast(S.errorText[r.error]);
+        break;
+      }
+      case 'sanitizeCell': {
+        const r = S.applyAction(s, { type: 'sanitize', scope: 'cell', cell: Number(el.dataset.i) });
+        G.sheet = null;
+        if (!r.ok) return toast(S.errorText[r.error]);
+        return toast('Очаг удалён в конце недели.', true);
+      }
+      case 'ref': G.sheet = { type: 'ref' }; break;
+      case 'refItem': G.sheet = { type: 'ref', focus: el.dataset.id }; break;
+      case 'backdrop': if (ev.target !== el) return; // клик внутри листа
+      // fallthrough
+      case 'close':
+        if (G.sheet && G.sheet.type === 'review' && G.state.over) G.screen = 'final';
+        G.sheet = null; break;
+      case 'again': {
+        const same = !!el.dataset.same;
+        G.screen = 'start'; G.state = null; G.sheet = null; if (!same) G.seedShown = '';
+        break;
+      }
+      default: return;
+    }
+    render();
+  }
+
+  function onCell(i) {
+    const t = G.tool;
+    if (!t || G.scope === 'all') { G.sheet = { type: 'cell', i }; G.toast = null; return render(); }
+    G.toast = null;
+    if (t.kind === 'inspect') {
+      const r = S.applyAction(G.state, { type: 'inspect', scope: 'cell', cell: i });
+      if (!r.ok) return toast(S.errorText[r.error]);
+      G.sheet = { type: 'cell', i }; return render();
+    }
+    if (G.scope === 'row') { const r = S.rowOf(i); G.selRows.has(r) ? G.selRows.delete(r) : G.selRows.add(r); }
+    else G.sel.has(i) ? G.sel.delete(i) : G.sel.add(i);
+    render();
+  }
+
+  function boot(saved) {
+    if (saved && saved.G) Object.assign(G, saved.G, { sel: new Set(saved.G.sel || []), selRows: new Set(saved.G.selRows || []) });
+    document.addEventListener('click', onClick);
+    try { g.claude && g.claude.hot && g.claude.hot.snapshot && g.claude.hot.snapshot(() => ({ G: { ...G, sel: [...G.sel], selRows: [...G.selRows] } })); } catch (e) { /* нет хука */ }
+    render();
+  }
+  AG.ui = { G, render, boot };
+  const h = g.claude && g.claude.hot;
+  if (h && h.ready) h.ready(boot); else boot(h && h.data);
+})(window);
+
+</script>
+</body>
+</html>
